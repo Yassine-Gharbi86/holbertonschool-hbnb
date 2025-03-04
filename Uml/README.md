@@ -79,4 +79,6 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
     <img src="Diagrams/fetching list of places.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
 <p>When the user requests places with specific filters, the API forwards the request to the Business Logic Layer for filtering and validation. The Business Logic Layer then retrieves the places that match the given filters from the database. Finally, the API returns the list of filtered places to the user.</p>
+<h2>Conclusion</h2>
+<p>This document offers a comprehensive and well-structured overview of the HBnB system architecture, with a particular focus on the core business logic and seamless API interactions. Through detailed diagrams and in-depth explanations, it provides valuable insights that serve as a practical reference for developers. The information presented ensures a clear understanding of the system's design, facilitating an efficient and smooth implementation process while maintaining scalability and consistency across the platform.</p>
 </div>
