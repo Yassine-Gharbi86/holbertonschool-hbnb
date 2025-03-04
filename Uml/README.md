@@ -29,7 +29,7 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
     </div>
 <p>This diagram showcases <strong>HBnB’s modular structure</strong>, emphasizing <strong>scalability</strong>,<strong> reusability</strong>, and <strong>maintainability</strong>.
 </p>
-<h2>Business Logic Layer</h2>
+<h2>3. Business Logic Layer</h2>
 <h3>Overview</h3>
 <p>The Business Logic Layer is responsible for enforcing application rules, data integrity, and managing interactions between users, places, reviews, and amenities.</p>
 
@@ -52,4 +52,13 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
         <li><strong>Implementation of Facade Pattern</strong>: Simplifies interactions by providing high-level APIs.</li>
         <li><strong>Data Integrity and Validation</strong>: Input data is strictly validated before storage.</li>
     </ul>
+<h2>4. API Interaction Flow</h2>
+<h3>Overview</h3>
+<p>The HBnB API enables efficient communication between the frontend and backend, supporting CRUD operations for users, places, reviews, and amenities.
+</p>
+<h4>1. User Registration: A new user signs up for an account.<h4>
+<div align="center">
+    <img src="Diagrams/user_registration.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+    </div>
+<p>When the user submits their registration details, the API first validates the input to ensure that it meets the required criteria. Once validated, the data is forwarded to the Business Logic Layer, where it is checked for uniqueness. If the information is valid and unique, the user record is then saved to the database. Finally, based on the validation and storage results, the API sends a response, either confirming success or providing an error message.</p>
 </div>
