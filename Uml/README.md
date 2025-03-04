@@ -25,6 +25,6 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
     </ul>
 <h3>High-Level Package Diagram</h3>
     <div align="center">
-    <img src="/home/yassine/holbertonschool-hbnb/Uml/Diagrams/H.L.D.jpeg" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <img src="holbertonschool-hbnb/Uml/Diagrams/H.L.D.jpeg" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
     </div>
 </div>
