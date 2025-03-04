@@ -59,6 +59,15 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 <h4>1. User Registration: A new user signs up for an account.<h4>
 <div align="center">
     <img src="Diagrams/user_registration.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
-    </div>
+</div>
+
 <p>When the user submits their registration details, the API first validates the input to ensure that it meets the required criteria. Once validated, the data is forwarded to the Business Logic Layer, where it is checked for uniqueness. If the information is valid and unique, the user record is then saved to the database. Finally, based on the validation and storage results, the API sends a response, either confirming success or providing an error message.</p>
+
+<h4>2. Place Creation: A user creates a new place listing.</h4>
+<div align="center">
+    <img src="Diagrams/place creation.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+</div>
+
+<p>When the user submits the details of a place, the API forwards the request to the Business Logic Layer for validation. The Business Logic Layer checks the user's existence and, if valid, proceeds to insert the new place record into the database. Once the process is complete, the API returns a response, either confirming the successful addition of the place or providing an error message if any issues arise.</p>
+
 </div>
