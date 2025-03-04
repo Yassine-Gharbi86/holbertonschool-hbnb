@@ -56,7 +56,7 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 <h3>Overview</h3>
 <p>The HBnB API enables efficient communication between the frontend and backend, supporting CRUD operations for users, places, reviews, and amenities.
 </p>
-<h4>1. User Registration: A new user signs up for an account.<h4>
+<h4>1. User Registration: A new user signs up for an account.</h4>
 <div align="center">
     <img src="Diagrams/user_registration.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
@@ -69,5 +69,14 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 </div>
 
 <p>When the user submits the details of a place, the API forwards the request to the Business Logic Layer for validation. The Business Logic Layer checks the user's existence and, if valid, proceeds to insert the new place record into the database. Once the process is complete, the API returns a response, either confirming the successful addition of the place or providing an error message if any issues arise.</p>
-
+<h4>3. Review Submission: A user submits a review for a place</h4>
+<div align="center">
+    <img src="Diagrams/Feedback Submit.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+</div>
+<p>When the user submits a review along with the place ID, the API first validates the request before forwarding it to the Business Logic Layer. The Business Logic Layer checks the existence of both the user and the place, and if everything is valid, it stores the review in the database. Afterward, the API sends a response, either confirming the review's successful submission or providing an error message if any issues occur.</p>
+<h4>4. Fetching a List of Places: A user requests a list of available places.</h4>
+<div align="center">
+    <img src="Diagrams/fetching list of places.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+</div>
+<p>When the user requests places with specific filters, the API forwards the request to the Business Logic Layer for filtering and validation. The Business Logic Layer then retrieves the places that match the given filters from the database. Finally, the API returns the list of filtered places to the user.</p>
 </div>
