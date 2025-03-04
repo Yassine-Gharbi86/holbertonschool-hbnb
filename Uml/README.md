@@ -27,4 +27,29 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
     <div align="center">
     <img src="Diagrams/H.L.D.jpeg" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
     </div>
+<p>This diagram showcases <strong>HBnB’s modular structure</strong>, emphasizing <strong>scalability</strong>,<strong> reusability</strong>, and <strong>maintainability</strong>.
+</p>
+<h2>Business Logic Layer</h2>
+<h3>Overview</h3>
+<p>The Business Logic Layer is responsible for enforcing application rules, data integrity, and managing interactions between users, places, reviews, and amenities.</p>
+
+
+<h3>Detailed Class Diagram</h3>
+
+
+<h3>Key Components</h3>
+<ul>
+        <li><strong>Facade Interface</strong> – Provides a unified API for managing users, places, reviews, and amenities.</li>
+        <li><strong>User</strong> – Represents registered users, storing details like name, email, and hashed password.</li>
+        <li><strong>Place</strong> – Stores property details such as name, description, location, pricing, and guest capacity.</li>
+        <li><strong>Review</strong> – Allows users to submit reviews for places, including ratings and feedback.</li>
+        <li><strong>Amenity</strong> – Represents additional features available for a place (e.g., WiFi, pool, gym).</li>
+    </ul>
+<h3>Design Decisions</h3>
+<ul>
+        <li><strong>Encapsulation of Business Logic</strong>: Each entity manages its own rules and constraints.</li>
+        <li><strong>UUIDs for Unique Identification</strong>: Ensures global uniqueness across distributed environments.</li>
+        <li><strong>Implementation of Facade Pattern</strong>: Simplifies interactions by providing high-level APIs.</li>
+        <li><strong>Data Integrity and Validation</strong>: Input data is strictly validated before storage.</li>
+    </ul>
 </div>
