@@ -35,7 +35,9 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 
 
 <h3>Detailed Class Diagram</h3>
-
+    <div align="center">
+    <img src="Diagrams/ClasseUML.png" alt="Detailed class diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+    </div>
 
 <h3>Key Components</h3>
 <ul>
