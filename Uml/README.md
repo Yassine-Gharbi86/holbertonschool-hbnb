@@ -63,14 +63,53 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
     <img src="Diagrams/UserRegistraion.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
 
-<p>When the user submits their registration details, the API first validates the input to ensure that it meets the required criteria. Once validated, the data is forwarded to the Business Logic Layer, where it is checked for uniqueness. If the information is valid and unique, the user record is then saved to the database. Finally, based on the validation and storage results, the API sends a response, either confirming success or providing an error message.</p>
+<p>
+    This sequence diagram outlines the user registration process by illustrating the interactions between the key components:
+</p>
+
+<ul>
+    <li><strong>User</strong>: Initiates the registration request.</li>
+    <li><strong>Registration Interface</strong>: Receives the user's input and first conducts a format verification to ensure the data meets the required standards.</li>
+    <li><strong>Business Logic Layer</strong>: Takes the verified credentials and communicates with the database to determine if the user already exists.</li>
+    <li><strong>Database</strong>:
+        <ul>
+            <li><strong>Existing Account</strong>: Returns an error indicating that the user already exists, leading the business logic to relay an error message back to the registration interface, which then informs the user.</li>
+            <li><strong>New Account</strong>: Confirms that no such account exists, prompting the business logic layer to proceed with registration. The success feedback is sent back to the registration interface which then displays a success message to the user.</li>
+        </ul>
+    </li>
+</ul>
+
+<p>
+    The diagram effectively showcases the alternate paths to handle both error scenarios (duplicate account) and successful registrations, ensuring robust management of the user registration process.
+</p>
+
 
 <h4>2. Place Creation: A user creates a new place listing.</h4>
 <div align="center">
     <img src="Diagrams/PlaceCreation.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
 
-<p>When the user submits the details of a place, the API forwards the request to the Business Logic Layer for validation. The Business Logic Layer checks the user's existence and, if valid, proceeds to insert the new place record into the database. Once the process is complete, the API returns a response, either confirming the successful addition of the place or providing an error message if any issues arise.</p>
+<p>
+    This sequence diagram outlines the process for creating a place within the system, detailing key interactions between the user interface, the business logic, and the database. Here's a step-by-step summary:
+</p>
+
+<ul>
+    <li><strong>User Initiation</strong>: The process begins when the user starts the place creation sequence.</li>
+    <li><strong>Input Validation</strong>: The user interface first validates the input provided by the user to ensure it meets the required standards.</li>
+    <li><strong>Request Submission</strong>: Once validated, the user interface sends the place creation request to the business logic layer.</li>
+    <li><strong>Database Check</strong>: The business logic queries the database to check if a place with the same identifier already exists.</li>
+    <li><strong>Decision Point</strong>:
+        <ul>
+            <li><strong>If the Place Exists</strong>: An error response is returned, and the user interface displays an error message to inform the user that the place already exists.</li>
+            <li><strong>If the Place Does Not Exist</strong>: The process continues successfully, with the new place being created, and a success message is conveyed to the user interface.</li>
+        </ul>
+    </li>
+</ul>
+
+<p>
+    This diagram effectively highlights the critical decision points in the process, emphasizing both validation and duplicate prevention measures. It’s a concise visual representation that ensures the integrity of the system by preventing duplicate entries while clearly communicating success or failure to the user.
+</p>
+
 <h4>3. Review Submission: A user submits a review for a place</h4>
 <div align="center">
     <img src="Diagrams/Reviewsubmition.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
@@ -98,7 +137,24 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 <div align="center">
     <img src="Diagrams/fecthinglist.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
-<p>When the user requests places with specific filters, the API forwards the request to the Business Logic Layer for filtering and validation. The Business Logic Layer then retrieves the places that match the given filters from the database. Finally, the API returns the list of filtered places to the user.</p>
+<p>
+    This sequence diagram illustrates the process for fetching a list of places within the system, highlighting the interactions between the user, the places interface, the business logic, and the database. Here's a step-by-step summary:
+</p>
+
+<ul>
+    <li><strong>User Request</strong>: The process begins when the user initiates a request to fetch a list of places.</li>
+    <li><strong>Places Interface Verification</strong>: The places interface receives the request and verifies the provided search parameters to ensure they meet the necessary criteria.</li>
+    <li><strong>Passing Data to Business Logic</strong>: After validation, the places interface forwards the filtered search parameters to the business logic layer.</li>
+    <li><strong>Querying the Database</strong>: The business logic constructs and sends a query to the database to retrieve places that match the criteria.</li>
+    <li><strong>Database Response</strong>: The database processes the query and returns the matching set of places to the business logic.</li>
+    <li><strong>Returning the Filtered List</strong>: The business logic then sends this list of verified places back to the places interface.</li>
+    <li><strong>Display to User</strong>: Finally, the places interface presents the list of places to the user, completing the process.</li>
+</ul>
+
+<p>
+    This diagram effectively demonstrates the systematic flow of data and control between the different components, ensuring that only properly validated and filtered data is processed and displayed. The clear separation of responsibilities also enhances maintainability and robustness by isolating validation, business operations, and data retrieval into distinct stages.
+</p>
+
 <h2>5. Conclusion</h2>
 <p>This document offers a comprehensive and well-structured overview of the HBnB system architecture, with a particular focus on the core business logic and seamless API interactions. Through detailed diagrams and in-depth explanations, it provides valuable insights that serve as a practical reference for developers. The information presented ensures a clear understanding of the system's design, facilitating an efficient and smooth implementation process while maintaining scalability and consistency across the platform.</p>
 </div>
