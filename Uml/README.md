@@ -75,7 +75,25 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 <div align="center">
     <img src="Diagrams/Reviewsubmition.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
 </div>
-<p>When the user submits a review along with the place ID, the API first validates the request before forwarding it to the Business Logic Layer. The Business Logic Layer checks the existence of both the user and the place, and if everything is valid, it stores the review in the database. Afterward, the API sends a response, either confirming the review's successful submission or providing an error message if any issues occur.</p>
+<p>
+    This sequence diagram illustrates the process of submitting a review and emphasizes secure interactions through JWT validation. It involves four entities:
+</p>
+
+<ul>
+    <li><strong>User</strong>: Initiates the process by fetching a list of places and eventually submits a review.</li>
+    <li><strong>Review Interface</strong>: Acts as the intermediary that handles user communications and orchestrates the flow. It first requests JWT validation before any review can be processed.</li>
+    <li><strong>Authentication Services</strong>: Verifies the JSON Web Token provided by the user.</li>
+    <ul>
+        <li><strong>Valid JWT</strong>: Returns a "200 OK (JWT Validated)" response, allowing the review to proceed.</li>
+        <li><strong>Invalid JWT</strong>: Responds with "401 Unauthorized (Invalid JWT Token)", which triggers an error message to be displayed.</li>
+    </ul>
+    <li><strong>Database</strong>: On successful authentication, the review interface stores the submitted review in the database and confirms the operation with a success message.</li>
+</ul>
+
+<p>
+    The diagram clearly separates the normal and alternative flows—demonstrating what happens when authentication fails versus when it succeeds. This structured approach not only reinforces the importance of securing user input through JWT validation but also ensures that error handling is built into the process.
+</p>
+
 <h4>4. Fetching a List of Places: A user requests a list of available places.</h4>
 <div align="center">
     <img src="Diagrams/fecthinglist.png" alt="High-Level Architecture Diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
