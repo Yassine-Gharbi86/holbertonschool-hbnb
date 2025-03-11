@@ -36,16 +36,15 @@ It provides a structured breakdown of the system, ensuring clarity and consisten
 
 <h3>Detailed Class Diagram</h3>
     <div align="center">
-    <img src="Diagrams/ClasseUML.png" alt="Detailed class diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <img src="Diagrams/ClasseUML1.png" alt="Detailed class diagram" style="display: block; padding-bottom: 20px; padding-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
     </div>
 
 <h3>Key Components</h3>
 <ul>
-        <li><strong>Facade Interface</strong> – Provides a unified API for managing users, places, reviews, and amenities.</li>
-        <li><strong>User</strong> – Represents registered users, storing details like name, email, and hashed password.</li>
-        <li><strong>Place</strong> – Stores property details such as name, description, location, pricing, and guest capacity.</li>
-        <li><strong>Review</strong> – Allows users to submit reviews for places, including ratings and feedback.</li>
-        <li><strong>Amenity</strong> – Represents additional features available for a place (e.g., WiFi, pool, gym).</li>
+        <li><strong>User</strong> – Manages user data with attributes like id, name, email, and password_hash, supporting profile updates, account deletion, and password validation.</li>
+        <li><strong>Review</strong> –  Represents user-generated reviews with id, user_id, place_id, text, and rating, allowing editing, deletion, and moderation.</li>
+        <li><strong>Place</strong> – Models rental properties with id, name, description, price_per_night, max_guests, and owner_id, enabling updates, deletion, and revenue calculation.</li>
+        <li><strong>Amenity</strong> – Defines property features with id, name, and timestamps, supporting a many-to-many relationship with Place.</li>
     </ul>
 <h3>Design Decisions</h3>
 <ul>
