@@ -39,10 +39,11 @@ class InMemoryRepository(Repository):
     def get_all(self):
         return list(self._storage.values())
 
-    def update(self, obj_id, data):
+    def update(self, obj_id, updated_data):
+        """Update user details"""
         obj = self.get(obj_id)
         if obj:
-            obj.update(data)
+            obj.update(updated_data)
 
     def delete(self, obj_id):
         if obj_id in self._storage:
