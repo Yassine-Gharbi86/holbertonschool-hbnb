@@ -1,5 +1,6 @@
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
+from app.models.amenity import Amenity  # Import the Amenity model
 
 class HBnBFacade:
     def __init__(self):
@@ -31,12 +32,34 @@ class HBnBFacade:
         user = self.user_repo.get(user_id)
         if not user:
             return None
-
         for key, value in updated_data.items():
             setattr(user, key, value)
-
         self.user_repo.update(user_id, updated_data)
         return user
+
+    def create_amenity(self, amenity_data):
+        """Creates a new amenity and adds it to the repository."""
+        amenity = Amenity(**amenity_data)
+        self.amenity_repo.add(amenity)
+        return amenity
+
+    def get_amenity(self, amenity_id):
+        """Retrieves an amenity by its ID."""
+        return self.amenity_repo.get(amenity_id)
+
+    def get_all_amenities(self):
+        """Retrieves all amenities."""
+        return self.amenity_repo.get_all()
+
+    def update_amenity(self, amenity_id, amenity_data):
+        """Updates an amenity's information."""
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return None
+        for key, value in amenity_data.items():
+            setattr(amenity, key, value)
+        self.amenity_repo.update(amenity_id, amenity_data)
+        return amenity
 
     def get_place(self, place_id):
         """To be implemented in later tasks."""
