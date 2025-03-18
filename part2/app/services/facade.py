@@ -65,7 +65,7 @@ class HBnBFacade:
         return self.place_repo.get(place_id)
 
     def create_place(self, place_data):
-        """Creates a new place and adds it to the repository."""
+        
         owner = self.user_repo.get(place_data['owner_id'])
         if not owner:
             return "Owner not found"
@@ -85,5 +85,20 @@ class HBnBFacade:
 
         self.place_repo.add(place)
         return place
+
      def get_all_places(self):
+
         return self.place_repo.get_all()
+    
+    def update_place(self, place_id, place_data):
+
+        place = self.place_repo.get(place_id)
+        if not place:
+            return None
+
+        for key, value in place_data.items():
+            if hasattr(place, key):
+                setattr(place, key, value)
+
+        self.place_repo.update(place)
+        return place
