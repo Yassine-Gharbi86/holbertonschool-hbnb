@@ -3,7 +3,7 @@ from app.services import facade
 
 api = Namespace('places', description='Place operations')
 
-# Define models for related entities
+
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
@@ -16,7 +16,7 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Email of the owner')
 })
 
-# Define the place model for input validation and documentation
+
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
