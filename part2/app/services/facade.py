@@ -1,6 +1,6 @@
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
-from app.models.amenity import Amenity  # Import the Amenity model
+from app.models.amenity import Amenity
 
 class HBnBFacade:
     def __init__(self):
@@ -9,6 +9,7 @@ class HBnBFacade:
         self.review_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
 
+    # ---------- User Methods ----------
     def create_user(self, user_data):
         """Creates a new user and adds them to the repository."""
         user = User(**user_data)
@@ -37,6 +38,7 @@ class HBnBFacade:
         self.user_repo.update(user_id, updated_data)
         return user
 
+    # ---------- Amenity Methods ----------
     def create_amenity(self, amenity_data):
         """Creates a new amenity and adds it to the repository."""
         amenity = Amenity(**amenity_data)
@@ -61,44 +63,104 @@ class HBnBFacade:
         self.amenity_repo.update(amenity_id, amenity_data)
         return amenity
 
-    def get_place(self, place_id):
-        return self.place_repo.get(place_id)
-
+    # ---------- Place Methods ----------
     def create_place(self, place_data):
-        
-        owner = self.user_repo.get(place_data['owner_id'])
-        if not owner:
-            return "Owner not found"
+        """
+        Creates a new place.
+        Expects place_data to include: title, description, price, latitude, longitude, owner_id,
+        and optionally amenities (a list of amenity IDs).
+        Validates that price is non-negative, latitude is between -90 and 90, and longitude between -180 and 180.
+        """
+        # Validate numeric fields
+        try:
+            price = float(place_data.get('price', 0))
+            latitude = float(place_data.get('latitude', 0))
+            longitude = float(place_data.get('longitude', 0))
+        except ValueError:
+            return None
 
+        if price < 0 or not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+            return None
+
+        # Retrieve owner using owner_id
+        owner_id = place_data.get('owner_id')
+        owner = self.user_repo.get(owner_id)
+        if not owner:
+            return None  # Owner not found
+
+        # Retrieve amenities if provided
+        amenities_ids = place_data.get('amenities', [])
+        amenities_list = []
+        for amenity_id in amenities_ids:
+            amenity = self.amenity_repo.get(amenity_id)
+            if amenity:
+                amenities_list.append(amenity)
+
+        # Import the Place model here (ensure it's implemented in app/models/place.py)
+        from app.models.place import Place
         place = Place(
-            title=place_data['title'],
-            description=place_data.get('description', ''),
-            price=place_data['price'],
-            latitude=place_data['latitude'],
-            longitude=place_data['longitude'],
+            title=place_data.get('title'),
+            description=place_data.get('description'),
+            price=price,
+            latitude=latitude,
+            longitude=longitude,
             owner=owner
         )
-
-        
-        amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data.get('amenities', [])]
-        place.amenities = [a for a in amenities if a]
+        place.amenities = amenities_list
 
         self.place_repo.add(place)
         return place
 
-     def get_all_places(self):
+    def get_place(self, place_id):
+        """Retrieves a place by its ID (including associated owner and amenities)."""
+        return self.place_repo.get(place_id)
 
+    def get_all_places(self):
+        """Retrieves all places."""
         return self.place_repo.get_all()
-    
-    def update_place(self, place_id, place_data):
 
+    def update_place(self, place_id, place_data):
+        """
+        Updates a place's information.
+        Supports updating title, description, price, latitude, and longitude.
+        """
         place = self.place_repo.get(place_id)
         if not place:
             return None
 
-        for key, value in place_data.items():
-            if hasattr(place, key):
-                setattr(place, key, value)
+        # Validate and update numeric fields if provided
+        if 'price' in place_data:
+            try:
+                price = float(place_data['price'])
+                if price < 0:
+                    return None
+                place.price = price
+            except ValueError:
+                return None
 
-        self.place_repo.update(place)
+        if 'latitude' in place_data:
+            try:
+                latitude = float(place_data['latitude'])
+                if not (-90 <= latitude <= 90):
+                    return None
+                place.latitude = latitude
+            except ValueError:
+                return None
+
+        if 'longitude' in place_data:
+            try:
+                longitude = float(place_data['longitude'])
+                if not (-180 <= longitude <= 180):
+                    return None
+                place.longitude = longitude
+            except ValueError:
+                return None
+
+        if 'title' in place_data:
+            place.title = place_data['title']
+        if 'description' in place_data:
+            place.description = place_data['description']
+
+        # For now, owner and amenities are not updated via PUT.
+        self.place_repo.update(place_id, place_data)
         return place
