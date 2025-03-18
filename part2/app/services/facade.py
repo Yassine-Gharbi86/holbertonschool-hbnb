@@ -85,3 +85,5 @@ class HBnBFacade:
 
         self.place_repo.add(place)
         return place
+     def get_all_places(self):
+        return self.place_repo.get_all()
