@@ -62,5 +62,26 @@ class HBnBFacade:
         return amenity
 
     def get_place(self, place_id):
-        """To be implemented in later tasks."""
-        pass
+        return self.place_repo.get(place_id)
+
+    def create_place(self, place_data):
+        """Creates a new place and adds it to the repository."""
+        owner = self.user_repo.get(place_data['owner_id'])
+        if not owner:
+            return "Owner not found"
+
+        place = Place(
+            title=place_data['title'],
+            description=place_data.get('description', ''),
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
+            owner=owner
+        )
+
+        
+        amenities = [self.amenity_repo.get(amenity_id) for amenity_id in place_data.get('amenities', [])]
+        place.amenities = [a for a in amenities if a]
+
+        self.place_repo.add(place)
+        return place
