@@ -164,3 +164,65 @@ class HBnBFacade:
         # For now, owner and amenities are not updated via PUT.
         self.place_repo.update(place_id, place_data)
         return place
+
+    # ---------- Review Methods ----------
+    def create_review(self, review_data):
+        """
+        Creates a new review.
+        Expects review_data to include: text, rating, user_id, and place_id.
+        Validates that rating is between 1 and 5 and that both user and place exist.
+        """
+        # Extract user_id and place_id and remove them from review_data
+        user_id = review_data.pop("user_id", None)
+        place_id = review_data.pop("place_id", None)
+        try:
+            rating = int(review_data.get("rating"))
+        except (ValueError, TypeError):
+            return None
+        if rating < 1 or rating > 5:
+            return None
+
+        user = self.get_user(user_id)
+        place = self.get_place(place_id)
+        if not user or not place:
+            return None
+
+        from app.models.review import Review
+        # Create a new review using the user and place objects
+        review = Review(user=user, place=place, **review_data)
+        self.review_repo.add(review)
+        return review
+
+    def get_review(self, review_id):
+        """Retrieves a review by its ID."""
+        return self.review_repo.get(review_id)
+
+    def get_all_reviews(self):
+        """Retrieves all reviews."""
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        """Retrieves all reviews for a specific place."""
+        reviews = []
+        for review in self.review_repo.get_all():
+            if getattr(review, "place_id", None) == place_id:
+                reviews.append(review)
+        return reviews
+
+    def update_review(self, review_id, review_data):
+        """Updates a review."""
+        review = self.get_review(review_id)
+        if not review:
+            return None
+        for key, value in review_data.items():
+            setattr(review, key, value)
+        self.review_repo.update(review_id, review_data)
+        return review
+
+    def delete_review(self, review_id):
+        """Deletes a review."""
+        review = self.get_review(review_id)
+        if not review:
+            return False
+        self.review_repo.delete(review_id)
+        return True

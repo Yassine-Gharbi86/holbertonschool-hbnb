@@ -16,6 +16,13 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Email of the owner')
 })
 
+review_model = api.model('PlaceReview', {
+    'id': fields.String(description='Review ID'),
+    'text': fields.String(description='Text of the review'),
+    'rating': fields.Integer(description='Rating of the place (1-5)'),
+    'user_id': fields.String(description='ID of the user')
+})
+
 # Model for creating a new place (requires owner_id and amenities)
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
@@ -93,7 +100,8 @@ class PlaceResource(Resource):
                 'last_name': place.owner.last_name,
                 'email': place.owner.email
             },
-            'amenities': [{'id': amenity.id, 'name': amenity.name} for amenity in place.amenities]
+            'amenities': [{'id': amenity.id, 'name': amenity.name} for amenity in place.amenities],
+            'reviews': [review.to_dict() for review in getattr(place, 'reviews', [])]
         }, 200
 
     @api.expect(place_update_model, validate=True)
