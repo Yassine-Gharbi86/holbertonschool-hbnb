@@ -3,10 +3,12 @@ from app.services import facade
 
 api = Namespace('users', description='User operations')
 
+# Updated user model to include is_admin attribute
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
-    'email': fields.String(required=True, description='Email of the user')
+    'email': fields.String(required=True, description='Email of the user'),
+    'is_admin': fields.Boolean(required=False, description='Whether the user is an admin', default=False)
 })
 
 @api.route('/')
@@ -26,7 +28,8 @@ class UserList(Resource):
             'id': new_user.id,
             'first_name': new_user.first_name,
             'last_name': new_user.last_name,
-            'email': new_user.email
+            'email': new_user.email,
+            'is_admin': new_user.is_admin
         }, 201
 
     @api.response(200, 'List of users retrieved successfully')
@@ -37,7 +40,8 @@ class UserList(Resource):
             'id': user.id,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
+            'is_admin': user.is_admin
         } for user in users], 200
 
 @api.route('/<user_id>')
@@ -53,7 +57,8 @@ class UserResource(Resource):
             'id': user.id,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
+            'is_admin': user.is_admin
         }, 200
 
     @api.expect(user_model, validate=True)
@@ -70,5 +75,6 @@ class UserResource(Resource):
             'id': updated_user.id,
             'first_name': updated_user.first_name,
             'last_name': updated_user.last_name,
-            'email': updated_user.email
+            'email': updated_user.email,
+            'is_admin': updated_user.is_admin
         }, 200
