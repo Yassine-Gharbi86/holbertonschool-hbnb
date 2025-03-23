@@ -188,5 +188,29 @@ class TestAPIEndpoints(unittest.TestCase):
         data = json.loads(response.data)
         self.assertIsInstance(data, list)
 
+    # ----- Delete Review Test -----
+    def test_delete_review(self):
+        create_response = self.client.post('/api/v1/reviews/', json={
+            "text": "Delete me!",
+            "rating": 1,
+            "user_id": self.test_user["id"],
+            "place_id": self.test_place["id"]
+        })
+        review = json.loads(create_response.data)
+        review_id = review["id"]
+
+        # Delete the created review
+        delete_response = self.client.delete(f'/api/v1/reviews/{review_id}')
+        self.assertEqual(delete_response.status_code, 200)
+        delete_data = json.loads(delete_response.data)
+        self.assertEqual(delete_data.get("message"), "Review deleted successfully")
+
+        # Verify the review was deleted
+        check_response = self.client.get(f'/api/v1/reviews/{review_id}')
+        self.assertEqual(check_response.status_code, 404)
+        check_data = json.loads(check_response.data)
+        self.assertEqual(check_data.get("error"), "Review not found")
+
+
 if __name__ == "__main__":
     unittest.main()
