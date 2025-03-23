@@ -51,17 +51,11 @@ Each of the API endpoints was tested using cURL commands, simulating different t
 
 curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{ "first_name": "John", "last_name": "Doe", "email": "john.doe@example.com" }'
 
-php
-Copier
-Modifier
 
 We also tested edge cases such as missing or empty fields:
 
 curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{ "first_name": "", "last_name": "", "email": "invalid-email" }'
 
-sql
-Copier
-Modifier
 
 ### Unit Testing (via unittest)
 Automated unit tests were developed to check the correctness of each endpoint and the underlying business logic. Below is an example unit test for the user creation endpoint:
@@ -70,9 +64,7 @@ import unittest from app import create_app
 
 class TestUserEndpoints(unittest.TestCase):
 
-python
-Copier
-Modifier
+
 def setUp(self):
     self.app = create_app()
     self.client = self.app.test_client()
@@ -92,9 +84,6 @@ def test_create_user_invalid_data(self):
         "email": "invalid-email"
     })
     self.assertEqual(response.status_code, 400)
-vbnet
-Copier
-Modifier
 
 ### Edge Cases:
 We made sure to test boundary values such as:
@@ -115,10 +104,6 @@ As part of our testing and validation, Swagger documentation was auto-generated 
 To access the Swagger documentation, you can navigate to:
 
 http://127.0.0.1:5000/api/v1/
-
-yaml
-Copier
-Modifier
 
 This documentation provides detailed information about each endpoint's functionality and structure, making it easier for anyone using the API to understand its capabilities.
 
