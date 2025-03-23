@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from werkzeug.utils import secure_filename
+import re
 
 api = Namespace('users', description='User operations')
 
@@ -11,19 +13,38 @@ user_model = api.model('User', {
     'is_admin': fields.Boolean(required=False, description='Whether the user is an admin', default=False)
 })
 
+def is_valid_email(email):
+    # Regular expression to validate email format
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(email_regex, email)
+
 @api.route('/')
 class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
-    @api.response(400, 'Email already registered')
+    @api.response(400, 'Email already registered or invalid email format')
     def post(self):
         """Register a new user"""
         user_data = api.payload
+        
+        # Validate the email format
+        if not is_valid_email(user_data['email']):
+            return {'error': 'Invalid email format'}, 400
+
+        # Check if all required fields are non-empty
+        if not user_data['first_name'] or not user_data['last_name']:
+            return {'error': 'First name and last name cannot be empty'}, 400
+
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
 
+        # Create user and log for debugging
         new_user = facade.create_user(user_data)
+
+        # Log the created user details to debug the ID assignment
+        print(f"Created User: {new_user.id}, Email: {new_user.email}")
+
         return {
             'id': new_user.id,
             'first_name': new_user.first_name,

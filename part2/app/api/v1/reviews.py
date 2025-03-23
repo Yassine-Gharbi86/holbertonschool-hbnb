@@ -58,7 +58,7 @@ class ReviewResource(Resource):
         """Delete a review"""
         success = facade.delete_review(review_id)
         if not success:
-            return {'error': 'Review not found'}, 404
+            return {'message': 'Review not found'}, 404
         return {'message': 'Review deleted successfully'}, 200
 
 @api.route('/places/<place_id>/reviews')
