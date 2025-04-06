@@ -20,15 +20,11 @@ class Login(Resource):
         """Authenticate user and return a JWT token"""
         credentials = request.get_json()
 
-        
         user = User.query.filter_by(email=credentials['email']).first()
 
-        
         if user is None or not user.verify_password(credentials['password']):
             return {'error': 'Invalid credentials'}, 401
 
-        
         access_token = create_access_token(identity={'id': str(user.id), 'is_admin': user.is_admin})
 
-        
         return {'access_token': access_token}, 200
