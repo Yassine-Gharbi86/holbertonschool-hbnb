@@ -1,23 +1,39 @@
 import re
-from .Base_Model import BaseModel
+from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import request
+from app.models import User
+from app import db
 
-class User(BaseModel):
-    def __init__(self, first_name, last_name, email, is_admin=False):
-        super().__init__()
-        self.first_name = first_name[:50]
-        self.last_name = last_name[:50]
-        self.email = email if self.validate_email(email) else None
-        self.is_admin = is_admin
 
-    def validate_email(self, email):
-        """Validates email format."""
-        pattern = r"[^@]+@[^@]+\.[^@]+"
-        return re.match(pattern, email) is not None
+api = Namespace('users', description='User operations')
 
-    def hash_password(self, password):
-    """Hashes the password before storing it."""
-    self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+user_model = api.model('User', {
+    'first_name': fields.String(required=True, description='User first name'),
+    'last_name': fields.String(required=True, description='User last name')
+})
 
-    def verify_password(self, password):
-    """Verifies if the provided password matches the hashed password."""
-    return bcrypt.check_password_hash(self.password, password)
+@api.route('/<user_id>')
+class UserResource(Resource):
+    @jwt_required()
+    @api.expect(user_model)
+    def put(self, user_id):
+        """Modify user information"""
+        current_user = get_jwt_identity()
+
+        if current_user['id'] != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        data = request.get_json()
+
+        
+        if 'email' in data or 'password' in data:
+            return {'error': 'You cannot modify email or password'}, 400
+
+        user = User.query.get_or_404(user_id)
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+
+        db.session.commit()
+
+        return {'message': 'User details updated successfully'}, 200
