@@ -1,11 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from werkzeug.utils import secure_filename
-from app import bcrypt 
 import re
 
 api = Namespace('users', description='User operations')
-
 
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
@@ -29,11 +26,9 @@ class UserList(Resource):
         """Register a new user"""
         user_data = api.payload
 
-        
         if not is_valid_email(user_data['email']):
             return {'error': 'Invalid email format'}, 400
 
-        
         if not user_data['first_name'] or not user_data['last_name'] or not user_data['password']:
             return {'error': 'First name, last name, and password cannot be empty'}, 400
 
@@ -42,12 +37,11 @@ class UserList(Resource):
             return {'error': 'Email already registered'}, 400
 
         
+        from app import bcrypt
         hashed_password = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')
 
-        
         user_data['password'] = hashed_password
 
-       
         new_user = facade.create_user(user_data)
 
         return {
@@ -95,8 +89,9 @@ class UserResource(Resource):
         """Update user details"""
         updated_data = api.payload
 
-        
         if 'password' in updated_data:
+            
+            from app import bcrypt
             updated_data['password'] = bcrypt.generate_password_hash(updated_data['password']).decode('utf-8')
 
         updated_user = facade.update_user(user_id, updated_data)
