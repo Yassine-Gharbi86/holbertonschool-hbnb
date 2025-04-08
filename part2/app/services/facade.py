@@ -12,6 +12,11 @@ class HBnBFacade:
     # ---------- User Methods ----------
     def create_user(self, user_data):
         """Creates a new user and adds them to the repository."""
+        # Check if email already exists
+        existing_user = self.get_user_by_email(user_data['email'])
+        if existing_user:
+            return {'error': 'Email already registered'}
+
         user = User(**user_data)
         self.user_repo.add(user)
         return user
@@ -164,6 +169,26 @@ class HBnBFacade:
         # For now, owner and amenities are not updated via PUT.
         self.place_repo.update(place_id, place_data)
         return place
+        
+    def add_amenity_to_place(self, place_id, amenity_id):
+        """Retrieve the amenity by its ID from place"""
+        place = self.get_place(place_id)
+        amenity = self.get_amenity(amenity_id)
+        if not place or not amenity:
+            return None
+        if amenity not in place.amenities:
+            place.amenities.append(amenity)
+            self.place_repo.update(place_id, {"amenities": place.amenities})
+            return place
+        return place
+    
+    def add_review_to_place(self, place_id, review_id):
+        place = self.get_place(place_id)
+        review = self.get_review(review_id)
+        if not place or not review:
+            return None
+        if not hasattr(place, 'reviews'):
+            place.reviews = []
 
     # ---------- Review Methods ----------
     def create_review(self, review_data):
