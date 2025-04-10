@@ -5,11 +5,12 @@ import re
 
 api = Namespace('users', description='User operations')
 
-# Updated user model to include is_admin attribute
+# Updated user model to include password
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
+    'password': fields.String(required=True, description='Password of the user'),  # Add password field
     'is_admin': fields.Boolean(required=False, description='Whether the user is an admin', default=False)
 })
 
@@ -31,7 +32,7 @@ class UserList(Resource):
         if not is_valid_email(user_data['email']):
             return {'error': 'Invalid email format'}, 400
 
-        # Check if all required fields are non-empty
+        
         if not user_data['first_name'] or not user_data['last_name']:
             return {'error': 'First name and last name cannot be empty'}, 400
 
@@ -39,7 +40,10 @@ class UserList(Resource):
         if existing_user:
             return {'error': 'Email already registered'}, 400
 
-        # Create user and log for debugging
+        # Hash the password before creating the user
+        user_data['password'] = user_data['password']
+
+        # Create the user via the facade
         new_user = facade.create_user(user_data)
 
         # Log the created user details to debug the ID assignment
