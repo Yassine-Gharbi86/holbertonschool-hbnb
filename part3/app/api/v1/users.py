@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 from werkzeug.utils import secure_filename
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import re
 
 api = Namespace('users', description='User operations')
@@ -32,7 +33,6 @@ class UserList(Resource):
         if not is_valid_email(user_data['email']):
             return {'error': 'Invalid email format'}, 400
 
-        
         if not user_data['first_name'] or not user_data['last_name']:
             return {'error': 'First name and last name cannot be empty'}, 400
 
@@ -58,8 +58,14 @@ class UserList(Resource):
         }, 201
 
     @api.response(200, 'List of users retrieved successfully')
+    @jwt_required()  # Protecting this route with JWT
     def get(self):
         """Retrieve all users"""
+        current_user = get_jwt_identity()  # Get the current user's identity
+        # Optionally, you can restrict access to certain roles (e.g., admins)
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
         users = facade.get_all_users()
         return [{
             'id': user.id,
@@ -69,15 +75,23 @@ class UserList(Resource):
             'is_admin': user.is_admin
         } for user in users], 200
 
+
 @api.route('/<user_id>')
 class UserResource(Resource):
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
+    @jwt_required()  # Protecting this route with JWT
     def get(self, user_id):
         """Get user details by ID"""
+        current_user = get_jwt_identity()  # Get the current user's identity
+        # Optionally, restrict access to the user themselves or admins
+        if current_user['id'] != user_id and not current_user.get('is_admin'):
+            return {'error': 'Access forbidden'}, 403
+
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
+
         return {
             'id': user.id,
             'first_name': user.first_name,
@@ -89,8 +103,14 @@ class UserResource(Resource):
     @api.expect(user_model, validate=True)
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
+    @jwt_required()  # Protecting this route with JWT
     def put(self, user_id):
         """Update user details"""
+        current_user = get_jwt_identity()  # Get the current user's identity
+        # Only allow the user to update their own information or if an admin
+        if current_user['id'] != user_id and not current_user.get('is_admin'):
+            return {'error': 'Access forbidden'}, 403
+
         updated_data = api.payload
         updated_user = facade.update_user(user_id, updated_data)
         if not updated_user:
