@@ -1,10 +1,9 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
 
 api = Namespace('places', description='Place operations')
 
-
+# Models for nested related entities
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
@@ -24,7 +23,7 @@ review_model = api.model('PlaceReview', {
     'user_id': fields.String(description='ID of the user')
 })
 
-
+# Model for creating a new place (requires owner_id and amenities)
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
@@ -35,7 +34,7 @@ place_model = api.model('Place', {
     'amenities': fields.List(fields.String, description="List of amenity IDs")
 })
 
-
+# Model for updating a place (owner and amenities not updated)
 place_update_model = api.model('PlaceUpdate', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
@@ -46,16 +45,12 @@ place_update_model = api.model('PlaceUpdate', {
 
 @api.route('/')
 class PlaceList(Resource):
-    @jwt_required()
     @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new place"""
-        current_user = get_jwt_identity()
         place_data = api.payload
-        place_data['owner_id'] = current_user['id']
-        
         new_place = facade.create_place(place_data)
         if not new_place:
             return {'error': 'Invalid input data or owner not found'}, 400
@@ -92,6 +87,24 @@ class PlaceResource(Resource):
         if not place:
             return {'error': 'Place not found'}, 404
 
+        
+        amenities_data = []
+        for amenity_id in place.amenities:
+            amenity = facade.get_amenity(amenity_id)
+            if amenity:
+                amenities_data.append({'id': amenity.id, 'name': amenity.name})
+
+        reviews_data = []
+        for review_id in place.reviews:
+            review = facade.get_review(review_id)
+            if review:
+                reviews_data.append({
+                    'id': review.id,
+                    'text': review.text,
+                    'rating': review.rating,
+                    'user_id': review.user.id if review.user else None
+                })
+
         return {
             'id': place.id,
             'title': place.title,
@@ -105,30 +118,59 @@ class PlaceResource(Resource):
                 'last_name': place.owner.last_name,
                 'email': place.owner.email
             },
-            'amenities': [{'id': amenity.id, 'name': amenity.name} for amenity in place.amenities],
-            'reviews': [review.to_dict() for review in getattr(place, 'reviews', [])]
+            'amenities': amenities_data,
+            'reviews': reviews_data
         }, 200
 
-    @jwt_required()
     @api.expect(place_update_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         """Update a place's information"""
-        current_user = get_jwt_identity()
         place_data = api.payload
-        place = facade.get_place(place_id)
-        
-        if not place:
-            return {'error': 'Place not found'}, 404
-        
-        
-        if place.owner_id != current_user['id']:
-            return {'error': 'Unauthorized action'}, 403
-
         updated_place = facade.update_place(place_id, place_data)
         if not updated_place:
-            return {'error': 'Invalid input data'}, 400
-
+            return {'error': 'Place not found or invalid input data'}, 404
         return {'message': 'Place updated successfully'}, 200
+
+@api.route('/<place_id>/amenities/<amenity_id>')
+class AddAmenityToPlace(Resource):
+    @api.response(200, 'Amenity added to place')
+    @api.response(404, 'Place or Amenity not found')
+    def post(self, place_id, amenity_id):
+        """Add an amenity to a place"""
+        place = facade.add_amenity_to_place(place_id, amenity_id)
+        if not place:
+            return {'error': 'Place or Amenity not found'}, 404
+
+        return {
+            'message': 'Amenity added to place successfully',
+            'place': {
+                'id': place.id,
+                'title': place.title,
+                'amenities': [{'id': amenity.id, 'name': amenity.name} for amenity in place.amenities]
+            }
+        }, 200
+
+@api.route('/<place_id>/reviews')
+class AddReviewToPlace(Resource):
+    @api.expect(api.model('NewReview', {
+        'text': fields.String(required=True, description='Review text'),
+        'rating': fields.Integer(required=True, min=1, max=5, description='Rating (1-5)'),
+        'user_id': fields.String(required=True, description='ID of the user')
+    }), validate=True)
+    @api.response(201, 'Review created and added to place successfully')
+    @api.response(404, 'User or Place not found')
+    def post(self, place_id):
+        """Create and add a review to a place"""
+        review_data = api.payload
+        review_data['place_id'] = place_id
+        review = facade.create_review(review_data)
+        if not review:
+            return {'error': 'User or Place not found or invalid input'}, 404
+
+        return {
+            'message': 'Review created and added successfully',
+            'reviews': [{'id': review.id, 'text': review.text, 'rating': review.rating, 'user_id': review.user_id} for review in place.reviews]
+        }, 201
