@@ -51,9 +51,43 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place"""
         place_data = api.payload
+        errors = {}
+        title = place_data.get('title')
+        if not isinstance(title, str) or not title.strip():
+            errors['title'] = 'Title must be non empty.'
+
+        description = place_data.get('description')
+        if not isinstance(description, str) or not description.strip():
+            errors['description'] = 'Description must be non empty.'
+
+        price = place_data.get('price')
+        if not isinstance(price, (int, float)):
+            errors['price'] = 'Price must be a number.'
+
+        elif price < 0:
+            errors['price'] = 'Price cannot be negative.'
+
+        latitude = place_data.get('latitude')
+        if not latitude or not isinstance(latitude, (int, float)) or not (-90.0 <= latitude <= 90.0):
+            errors['latitude'] = 'Latitude must be a valid number between -90 and 90'
+
+    
+        longitude = place_data.get('longitude')
+        if not longitude or not isinstance(longitude, (int, float)) or not (-180.0 <= longitude <= 180.0):
+            errors['longitude'] = 'Longitude must be a valid number between -180 and 180'
+
+        owner_id = place_data.get('owner_id')
+        if not isinstance(owner_id, str):
+            errors['owner_id'] = 'Owner ID must be a string.'
+        elif not facade.user_exists(owner_id):
+            errors['owner_id'] = 'Owner not found.'
+
+        if errors:
+            return {'errors': errors}, 400
+
         new_place = facade.create_place(place_data)
         if not new_place:
-            return {'error': 'Invalid input data or owner not found'}, 400
+            return {'error': 'Failed to create place due to internal error.'}, 500
 
         return {
             'id': new_place.id,
