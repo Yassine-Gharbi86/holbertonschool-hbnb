@@ -43,6 +43,8 @@ class HBnBFacade:
         self.user_repo.update(user_id, updated_data)
         return user
 
+    def user_exists(self, user_id):
+        return self.user_repo.get(user_id) is not None
     # ---------- Amenity Methods ----------
     def create_amenity(self, amenity_data):
         """Creates a new amenity and adds it to the repository."""
