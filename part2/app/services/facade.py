@@ -217,6 +217,10 @@ class HBnBFacade:
         from app.models.review import Review
         # Create a new review using the user and place objects
         review = Review(user=user, place=place, **review_data)
+
+        place.add_review(review)
+
+
         self.review_repo.add(review)
         return review
 
@@ -230,20 +234,36 @@ class HBnBFacade:
 
     def get_reviews_by_place(self, place_id):
         """Retrieves all reviews for a specific place."""
-        reviews = []
-        for review in self.review_repo.get_all():
-            if getattr(review, "place_id", None) == place_id:
-                reviews.append(review)
-        return reviews
+        place = self.get_place(place_id)
+        if not place:
+            return []
+        return place.reviews
 
     def update_review(self, review_id, review_data):
         """Updates a review."""
         review = self.get_review(review_id)
         if not review:
             return None
-        for key, value in review_data.items():
-            setattr(review, key, value)
-        self.review_repo.update(review_id, review_data)
+        if "rating" in review_data:
+            try:
+                rating = int(review_data["rating"])
+                if rating < 1 or rating > 5:
+                    return None
+                review.rating = rating
+            except (ValueError, TypeError):
+                return None
+        if "text" in review_data:
+            text = review_data["text"].strip()
+            if not text:
+                return None
+            review.text = text
+        review_data.pop("user_id", None)
+        review_data.pop("place_id", None)
+
+        self.review_repo.update(review_id, {
+            "text": review.text,
+            "rating": review.rating
+        })
         return review
 
     def delete_review(self, review_id):

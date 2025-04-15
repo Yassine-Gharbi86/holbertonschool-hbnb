@@ -122,23 +122,19 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
 
         
-        amenities_data = []
-        for amenity_id in place.amenities:
-            amenity = facade.get_amenity(amenity_id)
-            if amenity:
-                amenities_data.append({'id': amenity.id, 'name': amenity.name})
+        amenities_data = [{
+            'id': amenity.id,
+            'name': amenity.name
+        } for amenity in place.amenities]
 
-        reviews_data = []
-        for review_id in place.reviews:
-            review = facade.get_review(review_id)
-            if review:
-                reviews_data.append({
-                    'id': review.id,
-                    'text': review.text,
-                    'rating': review.rating,
-                    'user_id': review.user.id if review.user else None
-                })
-
+        
+        reviews_data = [{
+            'id': review.id,
+            'text': review.text,
+            'rating': review.rating,
+            'user_id': review.user.id if review.user else None
+        } for review in place.reviews]
+            
         return {
             'id': place.id,
             'title': place.title,

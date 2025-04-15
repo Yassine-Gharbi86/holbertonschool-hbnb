@@ -15,7 +15,14 @@ class AmenityList(Resource):
     def post(self):
         """Register a new amenity"""
         amenity_data = api.payload
-        new_amenity = facade.create_amenity(amenity_data)
+
+        # Validation: name must not be empty or whitespace
+        name = amenity_data.get('name', '').strip()
+        if not name:
+            return {'error': 'Amenity name cannot be empty'}, 400
+
+        # Proceed with creation
+        new_amenity = facade.create_amenity({'name': name})
         return {'id': new_amenity.id, 'name': new_amenity.name}, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
@@ -42,7 +49,18 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update an amenity's information"""
         amenity_data = api.payload
-        updated_amenity = facade.update_amenity(amenity_id, amenity_data)
+
+        # Validation: name must not be empty or whitespace
+        name = amenity_data.get('name', '').strip()
+        if not name:
+            return {'error': 'Amenity name cannot be empty'}, 400
+
+        updated_amenity = facade.update_amenity(amenity_id, {'name': name})
         if not updated_amenity:
             return {'error': 'Amenity not found'}, 404
-        return {'message': 'Amenity updated successfully', 'id': updated_amenity.id, 'name': updated_amenity.name}, 200
+
+        return {
+            'message': 'Amenity updated successfully',
+            'id': updated_amenity.id,
+            'name': updated_amenity.name
+        }, 200

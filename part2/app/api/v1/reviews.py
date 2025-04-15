@@ -43,14 +43,40 @@ class ReviewResource(Resource):
 
     @api.expect(review_model, validate=True)
     @api.response(200, 'Review updated successfully')
+    @api.response(400, 'Invalid input data')
     @api.response(404, 'Review not found')
     def put(self, review_id):
         """Update a review's information"""
         review_data = api.payload
-        review = facade.update_review(review_id, review_data)
+        errors = {}
+
+        try:
+            rating = int(review_data.get("rating", 0))
+            if rating < 1 or rating > 5:
+                errors["rating"] = "Rating must be between 1 and 5."
+        except (TypeError, ValueError):
+            errors["rating"] = "Rating must be a valid integer."
+
+        text = review_data.get("text", "").strip()
+        if not text:
+            errors["text"] = "Text cannot be empty."
+        
+        if errors:
+            return {"errors": errors}, 400
+        
+        updated_fields = {
+            "text": text,
+            "rating": rating
+        }
+
+        review = facade.update_review(review_id, updated_fields)
         if not review:
-            return {'error': 'Review not found or invalid input data'}, 404
-        return {'message': 'Review updated successfully'}, 200
+            return {"error": "Review not found"}, 404
+        
+        return {
+            "message": "Review updated successfully",
+            "review": review.to_dict()
+        }, 200
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')

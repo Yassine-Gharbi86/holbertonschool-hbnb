@@ -84,10 +84,26 @@ class UserResource(Resource):
 
     @api.expect(user_model, validate=True)
     @api.response(200, 'User updated successfully')
+    @api.response(400, 'Invalid input data')
     @api.response(404, 'User not found')
     def put(self, user_id):
         """Update user details"""
         updated_data = api.payload
+
+        # Validate email format
+        if not is_valid_email(updated_data['email']):
+            return {'error': 'Invalid email format'}, 400
+
+        # Validate non-empty names
+        if not updated_data['first_name'] or not updated_data['last_name']:
+            return {'error': 'First name and last name cannot be empty'}, 400
+
+        # Check if email is taken by another user
+        existing_user = facade.get_user_by_email(updated_data['email'])
+        if existing_user and existing_user.id != user_id:
+            return {'error': 'Email is already registered by another user'}, 400
+
+        # Attempt to update
         updated_user = facade.update_user(user_id, updated_data)
         if not updated_user:
             return {'error': 'User not found'}, 404
