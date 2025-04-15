@@ -168,9 +168,16 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}, 404
-        if str(place.owner.id) != current_user['id']:
+
+        # Ensure that only the owner can update the place
+        if str(place.owner.id) != current_user['id'] and not current_user.get('is_admin', False):
             return {'error': 'Unauthorized action'}, 403
-        updated_place = facade.update_place(place_id, api.payload)
+
+        place_data = api.payload
+        updated_place = facade.update_place(place_id, place_data)
+        if not updated_place:
+            return {'error': 'Place not found or invalid input data'}, 400
+
         return {'message': 'Place updated successfully'}, 200
         
 
