@@ -10,7 +10,8 @@ user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
-    'is_admin': fields.Boolean(required=False, description='Whether the user is an admin', default=False)
+    'is_admin': fields.Boolean(required=False, description='Whether the user is an admin', default=False),
+    'password': fields.String(required=True, description='User password')
 })
 
 def is_valid_email(email):
@@ -44,6 +45,8 @@ class UserList(Resource):
 
         # Log the created user details to debug the ID assignment
         print(f"Created User: {new_user.id}, Email: {new_user.email}")
+
+        new_user = facade.create_user(user_data)
 
         return {
             'id': new_user.id,
