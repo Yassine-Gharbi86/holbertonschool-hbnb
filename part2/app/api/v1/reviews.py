@@ -11,6 +11,11 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+update_review_model = api.model('UpdateReview', {
+    'text': fields.String(required=True, description='Text of the review'),
+    'rating': fields.Integer(required=True, description='Rating of the place (1-5)')
+})
+
 @api.route('/')
 class ReviewList(Resource):
     @api.expect(review_model, validate=True)
@@ -41,7 +46,7 @@ class ReviewResource(Resource):
             return {'error': 'Review not found'}, 404
         return review.to_dict(), 200
 
-    @api.expect(review_model, validate=True)
+    @api.expect(update_review_model, validate=True)
     @api.response(200, 'Review updated successfully')
     @api.response(400, 'Invalid input data')
     @api.response(404, 'Review not found')
