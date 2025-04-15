@@ -25,8 +25,14 @@ class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered or invalid email format')
+    @jwt_required()
     def post(self):
         """Register a new user"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+
         user_data = api.payload
         
         # Validate the email format
@@ -95,8 +101,14 @@ class UserResource(Resource):
     def put(self, user_id):
         """Update user details"""
         current_user = get_jwt_identity()
-        if current_user['id'] != user_id:
+        is_admin = current_user.get('is_admin', False)
+        if current_user['id'] != user_id and not is_admin:
             return {'error': 'Unauthorized action'}, 403
+
+        if not is_admin:
+        # Block email/password change for normal users
+            if 'email' in updated_data or 'password' in updated_data:
+                return {'error': 'You cannot modify email or password'}, 400
 
         updated_data = api.payload
 
