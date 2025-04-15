@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource, fields
 from app.services import facade
 from werkzeug.utils import secure_filename
 import re
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('users', description='User operations')
 
@@ -88,9 +89,15 @@ class UserResource(Resource):
     @api.expect(user_model, validate=True)
     @api.response(200, 'User updated successfully')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
     @api.response(404, 'User not found')
+    @jwt_required()
     def put(self, user_id):
         """Update user details"""
+        current_user = get_jwt_identity()
+        if current_user['id'] != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
         updated_data = api.payload
 
         # Validate email format
