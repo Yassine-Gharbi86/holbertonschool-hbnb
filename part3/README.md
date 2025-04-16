@@ -42,7 +42,8 @@ The tasks in this phase have been organized in a way that gradually builds towar
 
 The following Mermaid.js code represents the schema for the project:
 
-https://www.mermaidchart.com/raw/e92b8c3f-3d58-4046-a0df-a70b625cbcd9?theme=light&version=v0.1&format=svg
+![ER Diagram](https://www.mermaidchart.com/raw/e92b8c3f-3d58-4046-a0df-a70b625cbcd9?theme=light&version=v0.1&format=svg)
+
 
 ## Setting Up the Project
 
