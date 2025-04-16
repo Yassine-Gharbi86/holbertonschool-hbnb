@@ -42,47 +42,7 @@ The tasks in this phase have been organized in a way that gradually builds towar
 
 The following Mermaid.js code represents the schema for the project:
 
-```mermaid
-erDiagram
-    User {
-        string id
-        string first_name
-        string last_name
-        string email
-        string password
-        boolean is_admin
-    }
-    Place {
-        string id
-        string title
-        string description
-        decimal price
-        float latitude
-        float longitude
-        string owner_id
-    }
-    Review {
-        string id
-        string text
-        integer rating
-        string user_id
-        string place_id
-    }
-    Amenity {
-        string id
-        string name
-    }
-    Place_Amenity {
-        string place_id
-        string amenity_id
-    }
-
-    User ||--o{ Place : owns
-    User ||--o{ Review : writes
-    Place ||--o{ Review : has
-    Place }o--o{ Amenity : has
-    Place_Amenity }o--o{ Amenity : links
-
+https://www.mermaidchart.com/raw/e92b8c3f-3d58-4046-a0df-a70b625cbcd9?theme=light&version=v0.1&format=svg
 
 ## Setting Up the Project
 
