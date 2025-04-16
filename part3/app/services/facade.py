@@ -1,279 +1,264 @@
-from app.persistence.repository import InMemoryRepository
+from app import db
 from app.models.user import User
 from app.models.amenity import Amenity
+from app.models.place import Place
+from app.models.review import Review
 from app.services.repositories.user_repository import UserRepository
-
-
+from app.services.repositories.place_repository import PlaceRepository
+from app.services.repositories.review_repository import ReviewRepository
+from app.services.repositories.amenity_repository import AmenityRepository
 
 class HBnBFacade:
+    """Class for facade methods"""
     def __init__(self):
         self.user_repo = UserRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
+        self.place_repo = PlaceRepository()
+        self.review_repo = ReviewRepository()
+        self.amenity_repo = AmenityRepository()
 
-    # ---------- User Methods ----------
+
+    """methods for user"""
     def create_user(self, user_data):
-        """Creates a new user and adds them to the repository."""
-        # Check if email already exists
-        existing_user = self.get_user_by_email(user_data['email'])
-        if existing_user:
-            return {'error': 'Email already registered'}
-
         user = User(**user_data)
-        user.hash_password(user_data['password'])
         self.user_repo.add(user)
         return user
-
+    
     def get_user(self, user_id):
-        """Retrieves a user by their ID."""
         return self.user_repo.get(user_id)
-
+    
     def get_user_by_email(self, email):
-        """Retrieves a user by email (for uniqueness checks)."""
-        return self.user_repo.get_by_attribute('email', email)
+        return self.user_repo.get_user_by_email(email)
     
     def get_all_users(self):
-        """Retrieves all users."""
         return self.user_repo.get_all()
-
-    def update_user(self, user_id, updated_data):
-        """Update user details"""
+    
+    def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
         if not user:
             return None
-        for key, value in updated_data.items():
-            setattr(user, key, value)
-        self.user_repo.update(user_id, updated_data)
+        user.first_name = user_data.get('first_name', user.first_name)
+        user.last_name = user_data.get('last_name', user.last_name)
+
+        db.session.commit()
         return user
+    
+    def get_user_by_id(self, user_id):
+        return self.user_repo.get_user_by_id(user_id)
+    
 
-    def user_exists(self, user_id):
-        return self.user_repo.get(user_id) is not None
-    # ---------- Amenity Methods ----------
+    """methods for amenity"""
     def create_amenity(self, amenity_data):
-        """Creates a new amenity and adds it to the repository."""
-        amenity = Amenity(**amenity_data)
+        # Create a new amenity and stores it in the repository
+        amenity = Amenity(
+            name=amenity_data['name'],
+            description=amenity_data.get('description', None)
+        )
+
+        # Add places to the amenity
+        place_ids = amenity_data.get('associated_places', [])
+        if place_ids:
+        # Retrieve the places by their IDs
+            places = self.place_repo.get_places_by_ids(place_ids)
+            amenity.associated_places.extend(places)  # Adds places to the amenity
+
+        # Add the amenity in the database
         self.amenity_repo.add(amenity)
+
         return amenity
-
+    
     def get_amenity(self, amenity_id):
-        """Retrieves an amenity by its ID."""
+        # Retrieve an amenity by ID
         return self.amenity_repo.get(amenity_id)
-
+    
     def get_all_amenities(self):
-        """Retrieves all amenities."""
+        # Retrieve all amenities
         return self.amenity_repo.get_all()
-
+    
     def update_amenity(self, amenity_id, amenity_data):
-        """Updates an amenity's information."""
+        # Update an amenity
         amenity = self.amenity_repo.get(amenity_id)
         if not amenity:
             return None
-        for key, value in amenity_data.items():
-            setattr(amenity, key, value)
-        self.amenity_repo.update(amenity_id, amenity_data)
+        amenity.name = amenity_data.get('name', amenity.name)
+        amenity.description = amenity_data.get('description', amenity.description)
+
+        # Handling many-to-many relationship
+        place_ids = amenity_data.get('associated_places', [])
+        if place_ids is not None:
+            new_places = self.place_repo.get_places_by_ids(place_ids)
+
+        # Add the new places
+        for place in new_places:
+            if place not in amenity.associated_places:
+                amenity.associated_places.append(place)
+
+        # Delete former places not in the new list
+        to_remove = [place for place in amenity.associated_places if place.id not in place_ids]
+        for place in to_remove:
+            amenity.associated_places.remove(place)
+
+        # Saves changes in the database
+        db.session.commit()
+
         return amenity
+    
+    def get_amenities_by_ids(self, amenity_ids):
+        # Retrieves places by their ids
+        return self.amenity_repo.get_amenities_by_ids(amenity_ids)
+    
+    
 
-    # ---------- Place Methods ----------
+    """methods for place"""
     def create_place(self, place_data):
-        """
-        Creates a new place.
-        Expects place_data to include: title, description, price, latitude, longitude, owner_id,
-        and optionally amenities (a list of amenity IDs).
-        Validates that price is non-negative, latitude is between -90 and 90, and longitude between -180 and 180.
-        """
-        # Validate numeric fields
-        try:
-            price = float(place_data.get('price', 0))
-            latitude = float(place_data.get('latitude', 0))
-            longitude = float(place_data.get('longitude', 0))
-        except ValueError:
-            return None
-
-        if price < 0 or not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
-            return None
-
-        # Retrieve owner using owner_id
-        owner_id = place_data.get('owner_id')
-        owner = self.user_repo.get(owner_id)
-        if not owner:
-            return None  # Owner not found
-
-        # Retrieve amenities if provided
-        amenities_ids = place_data.get('amenities', [])
-        amenities_list = []
-        for amenity_id in amenities_ids:
-            amenity = self.amenity_repo.get(amenity_id)
-            if amenity:
-                amenities_list.append(amenity)
-
-        # Import the Place model here (ensure it's implemented in app/models/place.py)
-        from app.models.place import Place
+        # Create a new place
         place = Place(
-            title=place_data.get('title'),
-            description=place_data.get('description'),
-            price=price,
-            latitude=latitude,
-            longitude=longitude,
-            owner=owner
+            title=place_data['title'],
+            description=place_data['description'],
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
         )
-        place.amenities = amenities_list
+        # Adds user_id to place after its creation
+        place.user_id = place_data['user_id']
+        # Adds amenities to the place
+        amenity_ids = place_data.get('associated_amenities', [])
+        if amenity_ids:
+            # Fetch Amenity objects corresponding to amenity's name inputed by user
+            amenities = self.amenity_repo.get_amenities_by_ids(amenity_ids)
+            place.associated_amenities.extend(amenities)  # Adds amenities to the place
 
+        # Adds the place in the database
         self.place_repo.add(place)
+
         return place
-
+    
     def get_place(self, place_id):
-        """Retrieves a place by its ID (including associated owner and amenities)."""
-        return self.place_repo.get(place_id)
-
+        """Retrieve a place by ID, including associated amenities"""
+        place = self.place_repo.get(place_id)  # Utilise la méthode dans le repository
+    
+        if place:
+            # Retourne un dictionnaire avec les informations du place
+            return {
+                'place': {
+                    'id': place.id,
+                    'title': place.title,
+                    'description': place.description,
+                    'price': place.price,
+                    'latitude': place.latitude,
+                    'longitude': place.longitude,
+                    'user_id': place.user_id
+                },
+                'associated_amenities': [amenity.id for amenity in place.associated_amenities]
+            }
+    
+        return None
+    
     def get_all_places(self):
-        """Retrieves all places."""
-        return self.place_repo.get_all()
-
+        # Retrieve all places
+        places = self.place_repo.get_all()
+        return [
+            {
+                'place': {
+                    'id': place.id,
+                    'title': place.title,
+                    'description': place.description,
+                    'price': place.price,
+                    'latitude': place.latitude,
+                    'longitude': place.longitude
+                },
+                'associated_amenities': [amenity.id for amenity in place.associated_amenities]
+            }
+            for place in places
+        ]
+    
     def update_place(self, place_id, place_data):
-        """
-        Updates a place's information.
-        Supports updating title, description, price, latitude, and longitude.
-        """
+        # Update a place
         place = self.place_repo.get(place_id)
         if not place:
             return None
-
-        # Validate and update numeric fields if provided
-        if 'price' in place_data:
-            try:
-                price = float(place_data['price'])
-                if price < 0:
-                    return None
-                place.price = price
-            except ValueError:
-                return None
-
-        if 'latitude' in place_data:
-            try:
-                latitude = float(place_data['latitude'])
-                if not (-90 <= latitude <= 90):
-                    return None
-                place.latitude = latitude
-            except ValueError:
-                return None
-
-        if 'longitude' in place_data:
-            try:
-                longitude = float(place_data['longitude'])
-                if not (-180 <= longitude <= 180):
-                    return None
-                place.longitude = longitude
-            except ValueError:
-                return None
-
-        if 'title' in place_data:
-            place.title = place_data['title']
-        if 'description' in place_data:
-            place.description = place_data['description']
-
-        # For now, owner and amenities are not updated via PUT.
-        self.place_repo.update(place_id, place_data)
-        return place
+        place.title = place_data.get('title', place.title)
+        place.description = place_data.get('description', place.description)
+        place.price = place_data.get('price', place.price)
+        place.latitude = place_data.get('latitude', place.latitude)
+        place.longitude = place_data.get('longitude', place.longitude)
         
-    def add_amenity_to_place(self, place_id, amenity_id):
-        """Retrieve the amenity by its ID from place"""
-        place = self.get_place(place_id)
-        amenity = self.get_amenity(amenity_id)
-        if not place or not amenity:
-            return None
-        if amenity not in place.amenities:
-            place.amenities.append(amenity)
-            self.place_repo.update(place_id, {"amenities": place.amenities})
-            return place
+        # Handles associated_amenities many-to-many relationship
+        amenity_ids = place_data.get('associated_amenities', [])
+        if amenity_ids is not None:  # If the amenities list is present in the data
+            # Fetch the amenities from the database
+            new_amenities = self.amenity_repo.get_amenities_by_ids(amenity_ids)
+        
+        # Add new amenities that are not already associated with the place
+        for amenity in new_amenities:
+            if amenity not in place.associated_amenities:
+                place.associated_amenities.append(amenity)
+        
+        # Remove amenities that are no longer associated with the place
+        to_remove = [amenity for amenity in place.associated_amenities if amenity.id not in amenity_ids]
+        for amenity in to_remove:
+            place.associated_amenities.remove(amenity)
+
+        # Save the updated place in the database
+        db.session.commit()
         return place
     
-    def add_review_to_place(self, place_id, review_id):
-        place = self.get_place(place_id)
-        review = self.get_review(review_id)
-        if not place or not review:
-            return None
-        if not hasattr(place, 'reviews'):
-            place.reviews = []
+    def delete_place(self, place_id):
+        # Delete a place
+        if self.place_repo.delete(place_id):
+            return True
+        return False
+    
+    def get_places_by_price_range(self, min_price, max_price):
+        # Retrieve places within a specific price range
+        return self.place_repo.get_by_price_range(min_price, max_price)
 
-    # ---------- Review Methods ----------
+    def get_places_by_amenity(self, amenity_id):
+        # Retrieve places with a specific amenity
+        return self.place_repo.get_by_amenity(amenity_id)
+
+    def get_places_by_owner(self, owner_id):
+        # Retrieve places owned by a specific user
+        return self.place_repo.get_by_owner(owner_id)
+    
+    def get_places_by_ids(self, place_ids):
+        # Retrieves places by their ids
+        return self.place_repo.get_places_by_ids(place_ids)
+    
+    
+    """methods for review"""
     def create_review(self, review_data):
-        """
-        Creates a new review.
-        Expects review_data to include: text, rating, user_id, and place_id.
-        Validates that rating is between 1 and 5 and that both user and place exist.
-        """
-        # Extract user_id and place_id and remove them from review_data
-        user_id = review_data.pop("user_id", None)
-        place_id = review_data.pop("place_id", None)
-        try:
-            rating = int(review_data.get("rating"))
-        except (ValueError, TypeError):
-            return None
-        if rating < 1 or rating > 5:
-            return None
-
-        user = self.get_user(user_id)
-        place = self.get_place(place_id)
-        if not user or not place:
-            return None
-
-        from app.models.review import Review
-        # Create a new review using the user and place objects
-        review = Review(user=user, place=place, **review_data)
-
-        place.add_review(review)
-
-
+        # Create a new review
+        review = Review(rating=review_data['rating'], text=review_data['text'])
+        review.user_id = review_data['user_id']
+        review.place_id = review_data['place_id']
         self.review_repo.add(review)
+
         return review
 
     def get_review(self, review_id):
-        """Retrieves a review by its ID."""
+        # Retrieve a review by ID
         return self.review_repo.get(review_id)
-
+    
     def get_all_reviews(self):
-        """Retrieves all reviews."""
+        # Retrieve all reviews
         return self.review_repo.get_all()
-
+    
     def get_reviews_by_place(self, place_id):
-        """Retrieves all reviews for a specific place."""
-        place = self.get_place(place_id)
-        if not place:
-            return []
-        return place.reviews
-
+        # Retrieve all reviews for a specific place
+        return self.review_repo.get_reviews_by_place(place_id)
+    
     def update_review(self, review_id, review_data):
-        """Updates a review."""
-        review = self.get_review(review_id)
-        if not review:
-            return None
-        if "rating" in review_data:
-            try:
-                rating = int(review_data["rating"])
-                if rating < 1 or rating > 5:
-                    return None
-                review.rating = rating
-            except (ValueError, TypeError):
-                return None
-        if "text" in review_data:
-            text = review_data["text"].strip()
-            if not text:
-                return None
-            review.text = text
-        review_data.pop("user_id", None)
-        review_data.pop("place_id", None)
+        # Update a review
+        review = self.review_repo.get(review_id)
+        review.text = review_data.get('text', review.text)
+        review.rating = review_data.get('rating', review.rating)
 
-        self.review_repo.update(review_id, {
-            "text": review.text,
-            "rating": review.rating
-        })
+        # Save the updated review in the database
+        db.session.commit()
         return review
-
+    
     def delete_review(self, review_id):
-        """Deletes a review."""
-        review = self.get_review(review_id)
-        if not review:
-            return False
-        self.review_repo.delete(review_id)
-        return True
+        # Delete a review
+        if self.review_repo.delete(review_id):
+            return True
+        return False

@@ -1,20 +1,29 @@
 from .Base_Model import BaseModel
+from app import db
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
 
 class Review(BaseModel):
-    def __init__(self, text, rating, place, user):
+    """represents a Review tied to Place by Composition and dependent on User"""
+    __tablename__ = 'reviews'
+    
+    text = db.Column(db.String(500), nullable=True)
+    rating = db.Column(db.Integer, nullable=False)
+    place_id = db.Column(db.String(36), db.ForeignKey('places.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
+    def __init__(self, rating, text):
         super().__init__()
+        self.rating = rating
         self.text = text
-        self.rating = max(1, min(rating, 5))
-        self.place = place
-        self.user = user
+        self.validate_review()
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "text": self.text,
-            "rating": self.rating,
-            "place_id": self.place.id if self.place else None,
-            "user_id": self.user.id if self.user else None,
-            "created_at": self.created_at.isoformat() if hasattr(self, "created_at") else None,
-            "updated_at": self.updated_at.isoformat() if hasattr(self, "updated_at") else None,
-        }
+    def validate_review(self):
+        """Validates review informations format"""
+
+        if not isinstance(self.text, str) or not self.text.strip():
+            raise ValueError("Text is required and must be a non-empty string")
+        if not isinstance(self.rating, int) or not (1 <= self.rating <= 5):
+            raise ValueError("Rating must be an integer between 1 and 5")
+        

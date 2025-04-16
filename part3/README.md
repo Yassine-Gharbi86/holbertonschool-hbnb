@@ -1,114 +1,113 @@
-# HBnB Project - Implementation of Business Logic and API Endpoints
+# HBnB Project: Part 3
 
-**Authors:** Elyes Bennasri, Yassine Gharbi
+## Strengthening the Backend with Authentication and Database Integration
 
----
+Welcome to Part 3 of the HBnB Project! In this stage, we enhance the backend by incorporating user authentication, authorization mechanisms, and persistent storage via SQLAlchemy. We'll be using SQLite for development and configuring MySQL for production environments.
 
-## Project Overview
+## Overview of Part 3
 
-The **HBnB Project** simulates a **vacation rental platform**, similar to **Airbnb**. This phase focuses on implementing the business logic and API endpoints that power the application, providing users with the ability to manage and interact with entities like **users**, **places**, **reviews**, and **amenities**.
+In this Part 3, we focus on securing the application, integrating a robust database, and setting up a foundation for a production-ready backend with real-world scalability in mind.
 
-The goal of this project was to translate the theoretical design from earlier stages into working code by implementing modular architecture, clean API design, and efficient business logic. Our primary focus was on creating a scalable and maintainable foundation for the application, which involved both business logic and API development.
+## Key Goals
 
----
+- **User Authentication & Authorization**: Implement JWT-based user authentication with Flask-JWT-Extended, along with role-based access control (admin vs regular users).
+- **Database Integration**: Replace the previous in-memory storage with SQLite for development purposes, while preparing MySQL for use in production.
+- **CRUD Operations with Persistence**: Refactor CRUD operations to interact directly with a persistent database, ensuring reliable data storage.
+- **Schema Design & Visualization**: Use Mermaid.js to design and visualize the database schema, making sure all relationships between entities are clearly represented.
+- **Data Integrity & Validation**: Ensure that all data follows necessary validation rules, and that model constraints are enforced.
 
-## Objectives and Tasks Achieved
+## Learning Outcomes
 
-In this section, we'll walk you through the steps taken in the project, including our approach to **designing** and **implementing** core features:
+By the end of this phase, you'll:
 
-- **Business Logic Layer Implementation:** We designed the core models such as **User**, **Place**, **Review**, and **Amenity**, ensuring data validation and relationships between entities.
-- **API Endpoints Development:** Using Flask and Flask-RESTx, we developed RESTful endpoints for each entity, ensuring clear structure and parameter validation.
-- **Testing and Validation:** We validated business logic and API endpoints through manual testing and automated unit tests, ensuring robust handling of edge cases.
-- **Integration of the Facade Pattern:** The Facade Pattern simplified communication between the API layer and business logic, making the code easier to maintain.
-- **Swagger Documentation:** API documentation was automatically generated using Flask-RESTx, providing an interactive reference for developers.
+- Implement a secure JWT-based authentication system for your API.
+- Set up role-based access control for different user types (admins and regular users).
+- Transition from in-memory storage to a SQLite database for development and a MySQL database for production.
+- Map out a relational database schema using SQLAlchemy and visualize it with Mermaid.js.
+- Ensure that your backend is secure, scalable, and capable of supporting real-world applications with reliable data storage.
 
----
+## Project Breakdown
 
-## Key Features and Contributions
+The tasks in this phase have been organized in a way that gradually builds towards a complete backend system with authentication, database integration, and scalable functionality:
 
-### User Model:
-We introduced basic validations for **first_name**, **last_name**, and **email**, ensuring that:
-- Email follows a valid format.
-- First name and last name are non-empty.
+1. **Enhance the User Model**: Modify the User model to securely store passwords using bcrypt2, and adjust the registration logic to accommodate this change.
+2. **Set Up JWT Authentication**: Implement authentication for the API with JWT tokens, ensuring that protected routes can only be accessed by authenticated users.
+3. **Role-based Access Control**: Implement access control to restrict specific actions (e.g., admins managing users, places, etc.).
+4. **Switch to SQLite Database**: Transition from using in-memory data storage to an SQLite database for development purposes.
+5. **Define Models Using SQLAlchemy**: Map the existing models (User, Place, Review, Amenity) to SQLAlchemy, ensuring that all relationships are properly established.
+6. **Prepare for Production with MySQL**: Configure MySQL for use in production environments, with SQLite used for local development.
+7. **Visualize the Database**: Create an entity-relationship diagram (ERD) using Mermaid.js to help visualize the database schema and entity relationships.
 
-### Place Model:
-For the **Place** model, we implemented validation to ensure:
-- The **title** is non-empty.
-- The **price** is a positive number.
-- **Latitude** is between -90 and 90, and **longitude** is between -180 and 180.
+## Database Design
 
-### Review Model:
-We ensured that the **text** field is non-empty and validated references to **User** and **Place** entities to ensure data integrity.
+The following Mermaid.js code represents the schema for the project:
 
----
+```mermaid
+erDiagram
+    User {
+        string id
+        string first_name
+        string last_name
+        string email
+        string password
+        boolean is_admin
+    }
+    Place {
+        string id
+        string title
+        string description
+        decimal price
+        float latitude
+        float longitude
+        string owner_id
+    }
+    Review {
+        string id
+        string text
+        integer rating
+        string user_id
+        string place_id
+    }
+    Amenity {
+        string id
+        string name
+    }
+    Place_Amenity {
+        string place_id
+        string amenity_id
+    }
 
-## Testing and Validation
-
-We employed two main forms of testing to ensure the application's correctness.
-
-### Manual Testing (via cURL)
-Each of the API endpoints was tested using cURL commands, simulating different types of requests (valid and invalid data). Below is an example of creating a user:
-
-curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{ "first_name": "John", "last_name": "Doe", "email": "john.doe@example.com" }'
+    User ||--o{ Place : owns
+    User ||--o{ Review : writes
+    Place ||--o{ Review : has
+    Place }o--o{ Amenity : has
+    Place_Amenity }o--o{ Amenity : links
 
 
-We also tested edge cases such as missing or empty fields:
+## Setting Up the Project
 
-curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{ "first_name": "", "last_name": "", "email": "invalid-email" }'
+1. **Clone the Repository**  
+   To get started, clone the repository:
 
+   ```bash
+   git clone https://github.com/Yassine-Gharbi86/holbertonschool-hbnb.git
+   cd hbnb-project
 
-### Unit Testing (via unittest)
-Automated unit tests were developed to check the correctness of each endpoint and the underlying business logic. Below is an example unit test for the user creation endpoint:
+2. **Install the Required Dependencies**  
+   Use the following command to install all necessary dependencies:
 
-import unittest from app import create_app
+   ```bash
+   pip install -r requirements.txt
 
-class TestUserEndpoints(unittest.TestCase):
+3. **Run the Application**  
+   Start the Flask development server with:
 
+   ```bash
+   flask run
 
-def setUp(self):
-    self.app = create_app()
-    self.client = self.app.test_client()
+## Contributors
 
-def test_create_user(self):
-    response = self.client.post('/api/v1/users/', json={
-        "first_name": "Jane",
-        "last_name": "Doe",
-        "email": "jane.doe@example.com"
-    })
-    self.assertEqual(response.status_code, 201)
+This project was developed by:
 
-def test_create_user_invalid_data(self):
-    response = self.client.post('/api/v1/users/', json={
-        "first_name": "",
-        "last_name": "",
-        "email": "invalid-email"
-    })
-    self.assertEqual(response.status_code, 400)
-
-### Edge Cases:
-We made sure to test boundary values such as:
-- **Latitude** and **Longitude** ranges (ensuring that latitude is between -90 and 90, and longitude is between -180 and 180).
-- **Invalid email formats** to check for proper validation.
-- **Price validations** to ensure that only positive values are accepted for prices.
-- **Missing or empty fields** in user creation requests, testing how the API handles incomplete data.
-- We also tested for cases where resources like users or places might not exist when performing operations such as retrieving or deleting data.
-
----
-
-## Swagger Documentation
-
-As part of our testing and validation, Swagger documentation was auto-generated using Flask-RESTx, which served both as:
-- A live API documentation interface.
-- A reference for developers to see what data is expected in requests and responses.
-
-To access the Swagger documentation, you can navigate to:
-
-http://127.0.0.1:5000/api/v1/
-
-This documentation provides detailed information about each endpoint's functionality and structure, making it easier for anyone using the API to understand its capabilities.
-
----
-
-## Footer
-
-Created by Elyes Bennasri & Yassine Gharbi. All Rights Reserved.
+- Elyes Bennasri
+- Yassine Gharbi

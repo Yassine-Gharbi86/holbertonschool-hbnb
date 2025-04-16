@@ -1,20 +1,20 @@
+from flask import request
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from datetime import timedelta
 from app.services import facade
 
-api = Namespace('auth', description='Authentication operations')
+api = Namespace('login', description='User authentication')
 
-# Model for login input validation
+# Request model for login
 login_model = api.model('Login', {
     'email': fields.String(required=True, description='User email'),
     'password': fields.String(required=True, description='User password')
 })
 
 @api.route('/login')
-class Login(Resource):
+class LoginResource(Resource):
     @api.expect(login_model)
-    @api.response(200, 'JWT token issued successfully')
-    @api.response(401, 'Invalid credentials')
     def post(self):
         """Authenticate user and return a JWT token"""
         credentials = api.payload
@@ -22,24 +22,25 @@ class Login(Resource):
 
         if not user or not user.verify_password(credentials['password']):
             return {'error': 'Invalid credentials'}, 401
-
-        # Generate token with user's ID and admin status
-        access_token = create_access_token(identity={
-            'id': str(user.id),
-            'is_admin': user.is_admin
-        })
-
+        access_token = create_access_token(identity=str(user.id), additional_claims={"is_admin": user.is_admin}, expires_delta=timedelta(days=1))
         return {'access_token': access_token}, 200
-    
+
 @api.route('/protected')
 class ProtectedResource(Resource):
     @jwt_required()
-    @api.response(200, 'Token valid, access granted')
-    @api.response(401, 'Missing or invalid token')
     def get(self):
-        """A protected endpoint that requires a valid JWT token"""
-        current_user = get_jwt_identity()
+        """Example protected endpoint"""
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
         return {
-            'message': f'Hello, user {current_user["id"]}',
-            'is_admin': current_user["is_admin"]
+            'message': f'Hello, user {current_user_id}',
+            'is_admin': claims.get("is_admin", False)
         }, 200
+
+@api.route('/generate_admin_token')
+class GenerateAdminToken(Resource):
+    def get(self):
+        ad_token = create_access_token(identity="admin", expires_delta=timedelta(days=365),
+                                    additional_claims={"is_admin": True})
+        return ({'admin_token': ad_token})
