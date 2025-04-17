@@ -24,7 +24,7 @@ body {
 
 /* Header Styles */
 header {
-    background-color: #ff9900;
+    background-color: #00FFFF;
     padding: 15px 0;
     color: white;
 }
@@ -73,7 +73,7 @@ nav {
 
 .login-button:hover {
     background-color: white;
-    color: #ff9900;
+    color: #00FFFF;
 }
 
 /* Main Content Styles */
@@ -92,7 +92,7 @@ main {
 .section-title {
     margin: 30px 0 20px;
     font-size: 24px;
-    border-bottom: 2px solid #ff9900;
+    border-bottom: 2px solid #00FFFF;
     padding-bottom: 5px;
     text-align: left;
 }
@@ -134,7 +134,7 @@ main {
 
 .place-card h2 {
     margin-bottom: 15px;
-    color: #ff9900;
+    color: #00FFFF;
     font-size: 22px;
 }
 
@@ -146,7 +146,7 @@ main {
 
 .details-button {
     display: inline-block;
-    background-color: #ff9900;
+    background-color: #00FFFF;
     color: white;
     text-decoration: none;
     padding: 10px 20px;
@@ -157,7 +157,7 @@ main {
 }
 
 .details-button:hover {
-    background-color: #e68a00;
+    background-color: #00ffffc4;
 }
 
 /* Place Details */
@@ -192,12 +192,12 @@ main {
 
 .reviewer-name {
     font-weight: bold;
-    color: #ff9900;
+    color: #00FFFF;
     margin-bottom: 5px;
 }
 
 .rating {
-    color: #ff9900;
+    color: #00FFFF;
     margin-top: 10px;
 }
 
@@ -209,7 +209,7 @@ main {
 
 .add-review-button {
     display: inline-block;
-    background-color: #ff9900;
+    background-color: #00FFFF;
     color: white;
     text-decoration: none;
     padding: 12px 24px;
@@ -219,7 +219,7 @@ main {
 }
 
 .add-review-button:hover {
-    background-color: #e68a00;
+    background-color: #00ffffc4;
 }
 
 /* Review Button */
@@ -230,7 +230,7 @@ main {
 
 .review-button .button {
     display: inline-block;
-    background-color: #ff9900;
+    background-color: #00FFFF;
     color: white;
     text-decoration: none;
     padding: 12px 24px;
@@ -240,7 +240,7 @@ main {
 }
 
 .review-button .button:hover {
-    background-color: #e68a00;
+    background-color: #00ffffc4;
 }
 
 /* Forms */
@@ -278,7 +278,7 @@ main {
 }
 
 .submit-button {
-    background-color: #ff9900;
+    background-color: #00FFFF;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -291,16 +291,23 @@ main {
 }
 
 .submit-button:hover {
-    background-color: #e68a00;
+    background-color: #00ffffc4;
 }
 
 /* Footer Styles */
 footer {
-    background-color: #ff9900;
+    background-color: #00FFFF;
     color: white;
     text-align: center;
     padding: 20px 0;
     margin-top: auto;
+}
+
+
+.place-card,
+.review-card {
+    margin: 20px;
+    padding: 10px;
 }
 
 /* Responsive Adjustments */
@@ -318,3 +325,6 @@ footer {
         margin-top: 10px;
     }
 }
+
+
+
