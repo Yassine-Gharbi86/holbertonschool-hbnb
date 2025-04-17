@@ -1,41 +1,51 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="apple-touch-icon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - HBnB</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/icon.png">
 </head>
 <body>
-  <header>
-    <img src="images/logo.png" alt="Logo" class="logo">
-    <a href="login.html" class="login-button">Login</a>
-  </header>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo-container">
+                <img src="images/logo.png" alt="HBnB Logo" class="logo">
+                <span class="logo-text"></span>
+            </a>
+        </div>
+    </header>
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
-  </nav>
+    <main>
+        <div class="container">
+            <h1 class="page-title">Login</h1>
+            
+            <div class="login-form-container">
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-button">Login</button>
+                </form>
+            </div>
+        </div>
+    </main>
 
-  <main>
-    <form id="login-form">
-      <h2>Login</h2>
-
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
-
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" required>
-
-      <button type="submit">Login</button>
-    </form>
-  </main>
-
-  <footer>
-    <p>© 2025 All Rights Reserved</p>
-  </footer>
-
-  <script src="scripts.js"></script>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 HBnB Evolution. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+    
 </body>
 </html>
