@@ -195,26 +195,28 @@ async function fetchPlaceDetails() {
 }
 
 function displayPlaceDetails(placeData) {
+  const place = placeData.place;
+  const amenities = placeData.associated_amenities || [];
+
   const placeName = document.getElementById('place-name');
   const placeDetailsSection = document.getElementById('place-details');
   const reviewsContainer = document.getElementById('reviews-container');
 
   if (!placeName || !placeDetailsSection || !reviewsContainer) return;
 
-  // Since your backend sends flat structure
-  placeName.textContent = placeData.title || 'Untitled Place';
+  placeName.textContent = place.title || 'Untitled Place';
   placeDetailsSection.innerHTML = '';
   reviewsContainer.innerHTML = '';
 
   const description = document.createElement('p');
-  description.textContent = placeData.description || 'No description provided.';
+  description.textContent = place.description || 'No description provided.';
 
   const price = document.createElement('p');
-  price.innerHTML = `<strong>Price per night:</strong> $${placeData.price ?? 'N/A'}`;
+  price.innerHTML = `<strong>Price per night:</strong> $${place.price ?? 'N/A'}`;
 
   const location = document.createElement('p');
-  if (placeData.latitude !== undefined && placeData.longitude !== undefined) {
-    location.innerHTML = `<strong>Location:</strong> (${placeData.latitude}, ${placeData.longitude})`;
+  if (place.latitude !== undefined && place.longitude !== undefined) {
+    location.innerHTML = `<strong>Location:</strong> (${place.latitude}, ${place.longitude})`;
   } else {
     location.innerHTML = `<strong>Location:</strong> Not specified`;
   }
@@ -223,8 +225,8 @@ function displayPlaceDetails(placeData) {
   amenitiesTitle.textContent = 'Amenities:';
 
   const amenitiesList = document.createElement('ul');
-  if (placeData.associated_amenities && placeData.associated_amenities.length > 0) {
-    placeData.associated_amenities.forEach(amenityName => {
+  if (amenities.length > 0) {
+    amenities.forEach(amenityName => {
       const li = document.createElement('li');
       li.textContent = amenityName;
       amenitiesList.appendChild(li);
@@ -241,7 +243,6 @@ function displayPlaceDetails(placeData) {
   placeDetailsSection.appendChild(amenitiesTitle);
   placeDetailsSection.appendChild(amenitiesList);
 
-  // No reviews because your backend does not return them
   const noReviews = document.createElement('p');
   noReviews.textContent = 'Reviews are not available.';
   reviewsContainer.appendChild(noReviews);
