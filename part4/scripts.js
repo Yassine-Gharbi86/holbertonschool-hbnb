@@ -109,9 +109,9 @@ function displayPlaces(places) {
       placeDiv.dataset.price = place.price; // for filtering
 
       placeDiv.innerHTML = `
-          <h3>${place.name}</h3>
+          <h3>${place.title}</h3>
           <p>${place.description}</p>
-          <p>Location: ${place.location}</p>
+          <p>Location: (${place.latitude}, ${place.longitude})</p>
           <p>Price: $${place.price}</p>
       `;
       placesList.appendChild(placeDiv);
