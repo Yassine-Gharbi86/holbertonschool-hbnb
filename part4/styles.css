@@ -144,21 +144,6 @@ main {
     font-size: 18px;
 }
 
-.details-button {
-    display: inline-block;
-    background-color: #00FFFF;
-    color: white;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-}
-
-.details-button:hover {
-    background-color: #00ffffc4;
-}
 
 /* Place Details */
 .place-details {
