@@ -247,3 +247,75 @@ function displayPlaceDetails(placeData) {
   noReviews.textContent = 'Reviews are not available.';
   reviewsContainer.appendChild(noReviews);
 }
+
+function getCookie(name) {
+  const cookieArr = document.cookie.split(';');
+  for (let cookie of cookieArr) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+          return cookie.substring((name.length + 1));
+      }
+  }
+  return null;
+}
+
+// Function to check if the user is authenticated
+function checkAuthentication() {
+  const token = getCookie('token');
+  if (!token) {
+      window.location.href = 'index.html';
+  }
+  return token;
+}
+
+// Function to extract the place_id from the URL query params
+function getPlaceIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('place_id'); // assuming URL is like add_review.html?place_id=xyz
+}
+
+// Function to submit the review via AJAX
+async function submitReview(token, placeId, reviewText, rating) {
+  try {
+      const response = await fetch('http://localhost:5000/api/v1/reviews/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+              text: reviewText,
+              rating: parseInt(rating),
+              place_id: placeId
+          })
+      });
+
+      if (response.ok) {
+          alert('Review submitted successfully!');
+          document.getElementById('review-form').reset();
+      } else {
+          const errorData = await response.json();
+          alert('Failed to submit review: ' + (errorData.error || 'Unknown error'));
+      }
+  } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('An error occurred while submitting your review.');
+  }
+}
+
+// Main logic after DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const reviewForm = document.getElementById('review-form');
+  const token = checkAuthentication();
+  const placeId = getPlaceIdFromURL();
+
+  if (reviewForm) {
+      reviewForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const reviewText = document.getElementById('review-text').value;
+          const rating = document.getElementById('rating').value;
+          await submitReview(token, placeId, reviewText, rating);
+      });
+  }
+});
+
