@@ -197,27 +197,31 @@ function displayPlaceDetails(place) {
 
   if (!placeName || !placeDetailsSection || !reviewsContainer) return;
 
-  placeName.textContent = place.title;
+  placeName.textContent = place.title || 'Untitled Place';
   placeDetailsSection.innerHTML = '';
   reviewsContainer.innerHTML = '';
 
   const description = document.createElement('p');
-  description.textContent = place.description;
+  description.textContent = place.description || 'No description provided.';
 
   const price = document.createElement('p');
-  price.innerHTML = `<strong>Price per night:</strong> $${place.price}`;
+  price.innerHTML = `<strong>Price per night:</strong> $${place.price ?? 'N/A'}`;
 
   const location = document.createElement('p');
-  location.innerHTML = `<strong>Location:</strong> (${place.latitude}, ${place.longitude})`;
+  if (place.latitude !== undefined && place.longitude !== undefined) {
+    location.innerHTML = `<strong>Location:</strong> (${place.latitude}, ${place.longitude})`;
+  } else {
+    location.innerHTML = `<strong>Location:</strong> Not specified`;
+  }
 
   const amenitiesTitle = document.createElement('h3');
   amenitiesTitle.textContent = 'Amenities:';
 
   const amenitiesList = document.createElement('ul');
-  if (place.amenities && place.amenities.length > 0) {
-    place.amenities.forEach(amenity => {
+  if (place.associated_amenities && place.associated_amenities.length > 0) {
+    place.associated_amenities.forEach(amenityName => {
       const li = document.createElement('li');
-      li.textContent = amenity.name;
+      li.textContent = amenityName;
       amenitiesList.appendChild(li);
     });
   } else {
@@ -232,25 +236,12 @@ function displayPlaceDetails(place) {
   placeDetailsSection.appendChild(amenitiesTitle);
   placeDetailsSection.appendChild(amenitiesList);
 
-  if (place.reviews && place.reviews.length > 0) {
-    place.reviews.forEach(review => {
-      const reviewDiv = document.createElement('div');
-      reviewDiv.classList.add('review-item');
+  // Since your place data does NOT include reviews directly from the backend response,
+  // You can either:
+  // 1. Hide the review section,
+  // 2. or show "No reviews yet."
 
-      const reviewText = document.createElement('p');
-      reviewText.textContent = `"${review.text}"`;
-
-      const reviewer = document.createElement('small');
-      reviewer.textContent = `by ${review.user_email || "Anonymous"}`;
-
-      reviewDiv.appendChild(reviewText);
-      reviewDiv.appendChild(reviewer);
-
-      reviewsContainer.appendChild(reviewDiv);
-    });
-  } else {
-    const noReviews = document.createElement('p');
-    noReviews.textContent = 'No reviews yet.';
-    reviewsContainer.appendChild(noReviews);
-  }
+  const noReviews = document.createElement('p');
+  noReviews.textContent = 'Reviews are not available.';
+  reviewsContainer.appendChild(noReviews);
 }
