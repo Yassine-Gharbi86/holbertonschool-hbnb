@@ -171,45 +171,50 @@ function checkAuthenticationPlaceDetails(placeId) {
   fetchPlaceDetails(token, placeId);
 }
 
-async function fetchPlaceDetails(token, placeId) {
+async function fetchPlaceDetails() {
+  const placeId = getPlaceIdFromURL();
+  if (!placeId) {
+    console.error('Place ID not found in URL');
+    return;
+  }
+
   try {
+    const token = getCookie('token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, {
-      method: 'GET',
-      headers: headers
-    });
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, { headers });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch place details');
+    if (response.ok) {
+      const placeData = await response.json();
+      displayPlaceDetails(placeData);
+    } else {
+      console.error('Failed to fetch place details', await response.json());
     }
-
-    const place = await response.json();
-    displayPlaceDetails(place);
   } catch (error) {
     console.error('Error fetching place details:', error);
   }
 }
 
-function displayPlaceDetails(place) {
+function displayPlaceDetails(placeData) {
   const placeName = document.getElementById('place-name');
   const placeDetailsSection = document.getElementById('place-details');
   const reviewsContainer = document.getElementById('reviews-container');
 
   if (!placeName || !placeDetailsSection || !reviewsContainer) return;
 
-  placeName.textContent = place.title || 'Untitled Place';
+  // Since your backend sends flat structure
+  placeName.textContent = placeData.title || 'Untitled Place';
   placeDetailsSection.innerHTML = '';
   reviewsContainer.innerHTML = '';
 
   const description = document.createElement('p');
-  description.textContent = place.description || 'No description provided.';
+  description.textContent = placeData.description || 'No description provided.';
 
   const price = document.createElement('p');
-  price.innerHTML = `<strong>Price per night:</strong> $${place.price ?? 'N/A'}`;
+  price.innerHTML = `<strong>Price per night:</strong> $${placeData.price ?? 'N/A'}`;
 
   const location = document.createElement('p');
-  if (place.latitude !== undefined && place.longitude !== undefined) {
-    location.innerHTML = `<strong>Location:</strong> (${place.latitude}, ${place.longitude})`;
+  if (placeData.latitude !== undefined && placeData.longitude !== undefined) {
+    location.innerHTML = `<strong>Location:</strong> (${placeData.latitude}, ${placeData.longitude})`;
   } else {
     location.innerHTML = `<strong>Location:</strong> Not specified`;
   }
@@ -218,8 +223,8 @@ function displayPlaceDetails(place) {
   amenitiesTitle.textContent = 'Amenities:';
 
   const amenitiesList = document.createElement('ul');
-  if (place.associated_amenities && place.associated_amenities.length > 0) {
-    place.associated_amenities.forEach(amenityName => {
+  if (placeData.associated_amenities && placeData.associated_amenities.length > 0) {
+    placeData.associated_amenities.forEach(amenityName => {
       const li = document.createElement('li');
       li.textContent = amenityName;
       amenitiesList.appendChild(li);
@@ -236,11 +241,7 @@ function displayPlaceDetails(place) {
   placeDetailsSection.appendChild(amenitiesTitle);
   placeDetailsSection.appendChild(amenitiesList);
 
-  // Since your place data does NOT include reviews directly from the backend response,
-  // You can either:
-  // 1. Hide the review section,
-  // 2. or show "No reviews yet."
-
+  // No reviews because your backend does not return them
   const noReviews = document.createElement('p');
   noReviews.textContent = 'Reviews are not available.';
   reviewsContainer.appendChild(noReviews);
