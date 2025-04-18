@@ -52,8 +52,6 @@ function getCookie(name) {
   return null;
 }
 
-// --- Login and Main Page Logic ---
-
 function checkAuthentication() {
   const token = getCookie('token');
   const loginLink = document.getElementById('login-link');
@@ -149,8 +147,6 @@ function handlePriceFilter(event) {
   });
 }
 
-// --- Place Details Page Logic ---
-
 function getPlaceIdFromURL() {
   const params = new URLSearchParams(window.location.search);
   return params.get('place_id');
@@ -171,21 +167,19 @@ function checkAuthenticationPlaceDetails(placeId) {
   fetchPlaceDetails(token, placeId);
 }
 
-async function fetchPlaceDetails() {
-  const placeId = getPlaceIdFromURL();
+async function fetchPlaceDetails(token, placeId) {
   if (!placeId) {
     console.error('Place ID not found in URL');
     return;
   }
 
   try {
-    const token = getCookie('token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, { headers });
 
     if (response.ok) {
       const placeData = await response.json();
-      displayPlaceDetails(placeData);
+      displayPlaceDetails(placeData, token); // ✅ token used for fetching full name
     } else {
       console.error('Failed to fetch place details', await response.json());
     }
@@ -194,7 +188,8 @@ async function fetchPlaceDetails() {
   }
 }
 
-function displayPlaceDetails(placeData) {
+// ✅ CHANGE: Show full name of owner as a separate <p> element (not in title)
+async function displayPlaceDetails(placeData, token) {
   const place = placeData.place;
   const amenities = placeData.associated_amenities || [];
 
@@ -204,9 +199,14 @@ function displayPlaceDetails(placeData) {
 
   if (!placeName || !placeDetailsSection || !reviewsContainer) return;
 
-  placeName.textContent = place.title || 'Untitled Place';
+  placeName.textContent = `${place.title}`;
+
+  const ownerName = await fetchUserName(place.user_id, token);
+
   placeDetailsSection.innerHTML = '';
-  reviewsContainer.innerHTML = '';
+
+  const ownerPara = document.createElement('p');
+  ownerPara.innerHTML = `<strong>Owner:</strong> ${ownerName}`;
 
   const description = document.createElement('p');
   description.textContent = place.description || 'No description provided.';
@@ -237,6 +237,7 @@ function displayPlaceDetails(placeData) {
     amenitiesList.appendChild(li);
   }
 
+  placeDetailsSection.appendChild(ownerPara);      // ✅ Appended owner info
   placeDetailsSection.appendChild(description);
   placeDetailsSection.appendChild(price);
   placeDetailsSection.appendChild(location);
@@ -248,74 +249,79 @@ function displayPlaceDetails(placeData) {
   reviewsContainer.appendChild(noReviews);
 }
 
-function getCookie(name) {
-  const cookieArr = document.cookie.split(';');
-  for (let cookie of cookieArr) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-          return cookie.substring((name.length + 1));
-      }
+// ✅ Helper: Fetch first + last name of owner
+async function fetchUserName(userId, token) {
+  try {
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/users/${userId}`, { headers });
+
+    if (response.ok) {
+      const user = await response.json();
+      const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+      return fullName || 'Unknown';
+    } else {
+      console.error('Failed to fetch user data');
+      return 'Unknown';
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return 'Unknown';
   }
-  return null;
 }
 
-// Function to check if the user is authenticated
-function checkAuthentication() {
+function checkAuthenticationReviewPage() {
   const token = getCookie('token');
   if (!token) {
-      window.location.href = 'index.html';
+    window.location.href = 'index.html';
   }
   return token;
 }
 
-// Function to extract the place_id from the URL query params
-function getPlaceIdFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('place_id'); // assuming URL is like add_review.html?place_id=xyz
-}
-
-// Function to submit the review via AJAX
 async function submitReview(token, placeId, reviewText, rating) {
   try {
-      const response = await fetch('http://localhost:5000/api/v1/reviews/', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-              text: reviewText,
-              rating: parseInt(rating),
-              place_id: placeId
-          })
-      });
+    const response = await fetch('http://127.0.0.1:5000/api/v1/reviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        place_id: placeId,
+        text: reviewText,
+        rating: rating
+      })
+    });
 
-      if (response.ok) {
-          alert('Review submitted successfully!');
-          document.getElementById('review-form').reset();
-      } else {
-          const errorData = await response.json();
-          alert('Failed to submit review: ' + (errorData.error || 'Unknown error'));
-      }
+    if (response.ok) {
+      alert('Review submitted successfully!');
+      document.getElementById('review-form').reset();
+    } else {
+      const errorData = await response.json();
+      alert('Failed to submit review: ' + (errorData.message || response.statusText));
+    }
   } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('An error occurred while submitting your review.');
+    console.error('Error submitting review:', error);
+    alert('An error occurred. Please try again.');
   }
 }
 
-// Main logic after DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const reviewForm = document.getElementById('review-form');
-  const token = checkAuthentication();
+const reviewForm = document.getElementById('review-form');
+
+if (reviewForm) {
+  const token = checkAuthenticationReviewPage();
   const placeId = getPlaceIdFromURL();
 
-  if (reviewForm) {
-      reviewForm.addEventListener('submit', async (event) => {
-          event.preventDefault();
-          const reviewText = document.getElementById('review-text').value;
-          const rating = document.getElementById('rating').value;
-          await submitReview(token, placeId, reviewText, rating);
-      });
-  }
-});
+  reviewForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
+    const reviewText = document.getElementById('review-text').value.trim();
+    const rating = parseInt(document.getElementById('review-rating').value);
+
+    if (!reviewText || isNaN(rating)) {
+      alert('Please enter both review text and rating.');
+      return;
+    }
+
+    await submitReview(token, placeId, reviewText, rating);
+  });
+}
